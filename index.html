@@ -31,6 +31,7 @@
             user-select: none; touch-action: manipulation;
         }
 
+        /* CRT 掃描線特效 */
         .crt::before {
             content: " ";
             display: block; position: absolute;
@@ -47,13 +48,35 @@
             overflow: hidden; border-left: 2px solid #222; border-right: 2px solid #222;
         }
 
+        /* 遊戲畫面容器與背景圖片處理 */
         .canvas-container {
             width: 100%; height: 65%;
             position: relative; border-bottom: 2px solid var(--horror-red);
-            overflow: hidden; background: #050505;
+            overflow: hidden;
+            background-color: #050505;
+            background-size: cover;
+            background-position: center;
+            /* 讓背景圖暗化且不鮮艷，避免干擾 */
+            transition: background-image 0.5s ease-in-out;
         }
 
-        #game-canvas { image-rendering: pixelated; width: 100%; height: 100%; }
+        /* 增加一層深色遮罩在 Canvas 之下，圖片之上 */
+        .canvas-container::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65); /* 確保背景圖很暗 */
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #game-canvas { 
+            position: relative;
+            z-index: 10; /* Canvas 在最上層 */
+            image-rendering: pixelated; 
+            width: 100%; height: 100%; 
+            background: transparent; /* 重要：讓背景圖片穿透 */
+        }
 
         .ui-panel {
             height: 35%; width: 100%; background: #050505;
@@ -61,7 +84,6 @@
             gap: 12px; z-index: 50; box-sizing: border-box;
         }
 
-        /* 介面控制元件樣式 */
         select, input {
             background: #0d0d0d !important;
             border: 1px solid #333 !important;
@@ -82,7 +104,7 @@
             padding: 10px; cursor: pointer; font-size: 9px;
             font-family: 'Press Start 2P', cursive;
             transition: 0.1s; border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .btn:active { background: #555; color: #fff; transform: scale(0.95); }
 
@@ -148,7 +170,7 @@
         <div class="banner-box">
             <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
         </div>
-        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Voice of the Dead</h1>
+        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Select Sector</h1>
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
             <div class="grid grid-cols-5 gap-1 mb-6" id="book-grid"></div>
@@ -200,7 +222,7 @@
 
     <!-- 管理員終端 -->
     <div id="admin-screen" class="overlay-screen hidden">
-        <h2 class="text-blue-600 mb-4 uppercase tracking-widest">Archive Terminal</h2>
+        <h2 class="text-blue-600 mb-4 uppercase">Archive Terminal</h2>
         <div class="admin-table-container">
             <table class="w-full text-left">
                 <thead class="bg-zinc-900 sticky top-0">
@@ -224,7 +246,7 @@
             <button onclick="speakTarget()" class="btn w-full bg-blue-900 text-white mb-3 py-4 font-bold uppercase">Play Voice</button>
             <button onclick="togglePause()" class="btn w-full bg-green-950 text-white py-4 font-bold uppercase">Resume</button>
         </div>
-        <p class="text-[7px] text-zinc-700">Listen and repeat for survival.</p>
+        <p class="text-[7px] text-zinc-700">Practice your pronunciation here.</p>
     </div>
 
     <!-- BOSS UI -->
@@ -237,16 +259,16 @@
 
     <!-- 結算畫面 -->
     <div id="win-screen" class="overlay-screen hidden">
-        <h1 class="text-green-500 text-2xl mb-4 flicker uppercase tracking-widest">Mission Complete</h1>
+        <h1 class="text-green-500 text-2xl mb-4 flicker uppercase">Mission Complete</h1>
         <p id="win-score-display" class="text-yellow-500 text-5xl mb-12 uppercase">0</p>
-        <button onclick="location.reload()" class="btn px-12 py-5 uppercase font-bold">Return Base</button>
+        <button onclick="location.reload()" class="btn px-12 py-5 uppercase">Return Base</button>
     </div>
 
     <div id="game-over-screen" class="overlay-screen hidden">
-        <h1 class="text-red-700 text-2xl mb-6 flicker uppercase tracking-tighter">You are dead</h1>
+        <h1 class="text-red-700 text-2xl mb-6 flicker uppercase">You are dead</h1>
         <p id="fail-score-display" class="text-yellow-500 text-5xl mb-12 uppercase">0</p>
         <div class="flex flex-col gap-3 w-full max-w-xs">
-            <button onclick="restartGame()" class="btn py-5 bg-red-950 text-white border-red-700 uppercase font-bold">Retry Mission</button>
+            <button onclick="restartGame()" class="btn py-5 bg-red-950 text-white border-red-700 uppercase">Retry Mission</button>
             <button onclick="location.reload()" class="btn py-4 text-zinc-500 uppercase">Back to Login</button>
         </div>
     </div>
@@ -299,6 +321,14 @@
 <script>
     const ADMIN_KEY = "AdaWong";
     
+    // 背景圖清單 (隨機抽選圖庫)
+    const BGS = [
+        "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=60", // 巷弄
+        "https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?auto=format&fit=crop&w=800&q=60", // 廢墟森林
+        "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=60", // 霧氣
+        "https://images.unsplash.com/photo-1505832426963-9a994648f21f?auto=format&fit=crop&w=800&q=60"  // 城市廢墟
+    ];
+
     // --- 8-bit 音效系統 ---
     const sfx = {
         ctx: null,
@@ -612,6 +642,10 @@
     }
 
     function startGame() {
+        // 開始時隨機切換背景
+        const randomBg = BGS[Math.floor(Math.random() * BGS.length)];
+        document.getElementById('canvas-holder').style.backgroundImage = `url('${randomBg}')`;
+
         state.gameActive = true; state.hp = 5; state.score = 0; state.kills = 0; state.bossesDefeated = 0;
         state.enemies = []; state.particles = []; state.combo = 0; state.freezeTimer = 0;
         state.wordPool = []; state.sentencePool = []; state.bossMode = false;
@@ -735,18 +769,28 @@
         if (!state.gameActive || state.isPaused) return;
         const rect = canvas.parentElement.getBoundingClientRect();
         const w = rect.width; const h = rect.height;
-        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h); 
-        if (state.shake > 0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake *= 0.88; }
+        
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        ctx.clearRect(0, 0, w, h); // 改為 ClearRect 以讓背景圖片顯現
+        
+        if (state.shake > 0) { 
+            ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); 
+            state.shake *= 0.88; 
+        }
+
         if (state.freezeTimer > 0) state.freezeTimer--;
+        
         ctx.fillStyle = "#222";
         state.bgStars.forEach(s => {
             const sx = w/2 + (s.x * s.z); const sy = h/2 + (s.y * s.z);
             ctx.globalAlpha = 0.4 * s.z; ctx.fillRect(sx, sy, s.s, s.s); ctx.globalAlpha = 1;
             if (state.freezeTimer <= 0) s.z += 0.003; if (s.z > 1) s.z = 0;
         });
+
         if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > 1800/state.difficulty) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
+
         const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             const en = state.enemies[i];
@@ -758,6 +802,7 @@
         for (let i = state.particles.length - 1; i >= 0; i--) {
             if (!state.particles[i].update()) state.particles.splice(i, 1); else state.particles[i].draw(ctx);
         }
+
         updateUIPanel(); requestAnimationFrame(gameLoop);
     }
 
