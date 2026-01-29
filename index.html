@@ -7,8 +7,8 @@
     
     <title>Voice of the Dead</title>
     <meta name="description" content="Want to Survive? Speak!">
-    <meta property="og:title" content="Speak your way out. - Voice of the Dead">
-    <meta property="og:description" content="面對恐懼，用聲音在末日中生存。這是一場結合聲音辨識與節奏的生存挑戰。">
+    <meta property="og:title" content="Speak your way out.">
+    <meta property="og:description" content="用聲音在末日中生存。">
     <meta property="og:image" content="https://d4cheap16.github.io/VoiceoftheDEAD/opentag.png">
     <meta property="og:type" content="website">
 
@@ -298,10 +298,10 @@
             <input type="text" id="input-name" placeholder="NAME" class="input-retro">
             <p class="text-[8px] text-zinc-600 mt-4 mb-1 uppercase px-1">Challenge Level</p>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn diff-rookie" id="diff-rookie">Rookie (x0.7)</button>
-                <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn diff-veteran active-diff" id="diff-veteran">Veteran (x1.0)</button>
-                <button onclick="setDifficulty(1.5, 'Nightmare')" class="btn diff-btn diff-nightmare" id="diff-nightmare">Nightmare (x1.5)</button>
-                <button onclick="setDifficulty(2.5, 'NoHope')" class="btn diff-btn diff-nohope text-red-600" id="diff-nohope">NO HOPE (x2.5)</button>
+                <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn diff-rookie" id="diff-rookie">Rookie</button>
+                <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn diff-veteran active-diff" id="diff-veteran">Veteran</button>
+                <button onclick="setDifficulty(1.5, 'Nightmare')" class="btn diff-btn diff-nightmare" id="diff-nightmare">Nightmare</button>
+                <button onclick="setDifficulty(2.5, 'NoHope')" class="btn diff-btn diff-nohope text-red-600" id="diff-nohope">NO HOPE</button>
             </div>
             <div class="flex gap-2 mt-4">
                 <button onclick="backToMission()" class="btn w-1/3 text-[8px] uppercase">Back</button>
@@ -341,12 +341,12 @@
     <div id="debug-panel" class="hidden">
         <div class="debug-controls">
             <div class="text-[10px] mb-2 font-bold uppercase text-center border-b border-green-500 pb-1">Debug Controls</div>
-            <button onclick="debugTrigger(0)" class="debug-btn">1. Trigger Heal (+HP)</button>
-            <button onclick="debugTrigger(1)" class="debug-btn">2. Trigger Flash (Freeze)</button>
-            <button onclick="debugTrigger(2)" class="debug-btn">3. Trigger Shotgun (Push)</button>
+            <button onclick="debugTrigger('RECOVER')" class="debug-btn">1. Trigger Heal (+HP)</button>
+            <button onclick="debugTrigger('FLASH')" class="debug-btn">2. Trigger Flash (Freeze)</button>
+            <button onclick="debugTrigger('SHOTGUN')" class="debug-btn">3. Trigger Shotgun (Push)</button>
             <button onclick="debugCritical()" class="debug-btn text-purple-400 border-purple-500">4. Trigger Critical (Wipe)</button>
             <button onclick="startBossBattle()" class="debug-btn text-red-400 border-red-500">5. Spawn BOSS</button>
-            <div class="mt-2 text-[7px] text-zinc-400">SPEED PARAMETERS (Reference):</div>
+            <div class="mt-2 text-[7px] text-zinc-400">PARAMETERS:</div>
             <div id="debug-params" class="debug-info"></div>
         </div>
     </div>
@@ -480,6 +480,50 @@
         'Veteran':  { min: 0.0008, max: 0.0016 },
         'Nightmare':{ min: 0.0012, max: 0.0020 },
         'NoHope':   { min: 0.0020, max: 0.0030 }
+    };
+
+    // 新增：獎勵效果設定表 (集中管理)
+    // 您可以在這裡調整顏色、文字、持續時間等參數
+    const REWARD_CONFIG = {
+        'RECOVER': {
+            text: "RECOVER (+1 HP)",
+            textColor: "#4ade80", // 亮綠色
+            borderColor: "#4ade80",
+            boxShadow: "0 0 25px rgba(74, 222, 128, 0.6)",
+            overlayColor: "rgba(0, 255, 0, 0.5)", // 全螢幕閃光顏色
+            overlayDuration: 600, // 閃光持續時間 (ms)
+            effect: (state) => { state.hp = Math.min(5, state.hp + 1); }
+        },
+        'FLASH': {
+            text: "FLASH (Freeze 3s)",
+            textColor: "#67e8f9", // 青色
+            borderColor: "#67e8f9",
+            boxShadow: "0 0 25px rgba(103, 232, 249, 0.6)",
+            overlayColor: "white",
+            overlayDuration: 1500, // 較長的淡出時間 (致盲感)
+            effect: (state) => { state.freezeTimer = 180; } // 180 frames = 3 seconds
+        },
+        'SHOTGUN': {
+            text: "SHOTGUN (Knockback All)",
+            textColor: "#fbbf24", // 琥珀色
+            borderColor: "#fbbf24",
+            boxShadow: "0 0 25px rgba(251, 191, 36, 0.6)",
+            overlayColor: "rgba(255, 200, 50, 0.6)", // 槍火黃光
+            overlayDuration: 100, // 瞬間閃光
+            effect: (state) => {
+                state.enemies.forEach(e => { if (!e.isDying) e.z = Math.max(0, e.z - 0.4); });
+                state.shake = 60; state.freezeTimer = 60; // 震動與短暫定格
+            }
+        },
+        'CRITICAL': {
+            text: "CRITICAL OVERLOAD & FULL HEAL!",
+            textColor: "#d946ef", // 紫色
+            borderColor: "#d946ef",
+            boxShadow: "0 0 40px rgba(217, 70, 239, 0.9)",
+            overlayColor: "rgba(217, 70, 239, 0.6)", // 紫色強光
+            overlayDuration: 800,
+            effect: (state) => { state.hp = 5; } // 補滿血 (殺敵邏輯在外部)
+        }
     };
 
     // --- 8-bit 音效系統 ---
@@ -718,46 +762,59 @@
         
         // 填充參數列表
         const paramDiv = document.getElementById('debug-params');
-        paramDiv.innerText = `BOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}`;
+        paramDiv.innerText = `REWARD_CONFIG = ${JSON.stringify(REWARD_CONFIG, null, 2)}\n\nBOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}`;
         
         startGame();
     };
 
-    // 新增：Debug 觸發一般獎勵
-    window.debugTrigger = (roll) => {
+    // 新增：觸發獎勵的通用函式 (內部使用)
+    function executeReward(key) {
+        const conf = REWARD_CONFIG[key];
+        if (!conf) return;
+
         sfx.reward();
-        const rewards = ["RECOVER (+1 HP)", "FLASH (Freeze 3s)", "SHOTGUN (Knockback All)"];
         const toast = document.getElementById('reward-toast');
         const overlay = document.getElementById('flash-overlay');
 
-        toast.innerText = `REWARD: ${rewards[roll]}`;
+        // 設定文字與樣式
+        toast.innerText = conf.text;
+        toast.style.color = conf.textColor;
+        toast.style.borderColor = conf.borderColor;
+        toast.style.boxShadow = conf.boxShadow;
         toast.classList.add('toast-active');
-        overlay.style.transition = "opacity 0.5s ease-out";
 
-        if (roll === 0) {
-            state.hp = Math.min(5, state.hp + 1);
-            toast.style.color = '#4ade80'; toast.style.borderColor = '#4ade80'; toast.style.boxShadow = '0 0 25px rgba(74, 222, 128, 0.6)';
-            overlay.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; overlay.style.opacity = "1";
-            setTimeout(() => overlay.style.opacity = "0", 600);
-        } else if (roll === 1) {
-            state.freezeTimer = 180; 
-            toast.style.color = '#67e8f9'; toast.style.borderColor = '#67e8f9'; toast.style.boxShadow = '0 0 25px rgba(103, 232, 249, 0.6)';
-            overlay.style.backgroundColor = 'white'; overlay.style.transition = "opacity 1.5s ease-out"; overlay.style.opacity = "1";
-            setTimeout(() => overlay.style.opacity = "0", 1500);
-        } else if (roll === 2) {
-            toast.style.color = '#fbbf24'; toast.style.borderColor = '#fbbf24'; toast.style.boxShadow = '0 0 25px rgba(251, 191, 36, 0.6)';
-            state.enemies.forEach(e => { if (!e.isDying) e.z = Math.max(0, e.z - 0.4); });
-            state.shake = 60; state.freezeTimer = 60; 
-            overlay.style.transition = "opacity 0.1s ease-in"; overlay.style.backgroundColor = 'rgba(255, 200, 50, 0.6)'; overlay.style.opacity = "0.8";
-            setTimeout(() => overlay.style.opacity = "0", 100);
-        }
+        // 設定全螢幕閃光
+        overlay.style.transition = `opacity ${conf.overlayDuration < 500 ? '0.1s' : '0.5s'} ease-out`;
+        overlay.style.backgroundColor = conf.overlayColor;
+        overlay.style.opacity = key === 'FLASH' ? "1" : "0.8"; // FLASH 特別亮
+
+        // 執行實際遊戲邏輯效果
+        if (conf.effect) conf.effect(state);
+
+        // 淡出 Overlay
         setTimeout(() => {
-            toast.classList.remove('toast-active'); toast.style.color = '#fff'; toast.style.borderColor = '#fff'; toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
-            setTimeout(() => overlay.style.backgroundColor = 'white', 500);
+            overlay.style.opacity = "0";
+        }, key === 'SHOTGUN' ? 100 : (key === 'FLASH' ? 1500 : 600)); // 特殊淡出時間
+
+        // 淡出 Toast 並重置
+        setTimeout(() => {
+            toast.classList.remove('toast-active');
+            // 延遲重置樣式，避免閃爍
+            setTimeout(() => {
+                toast.style.color = '#fff';
+                toast.style.borderColor = '#fff';
+                toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+                overlay.style.backgroundColor = 'white';
+            }, 500);
         }, 2000);
+    }
+
+    // 修改：Debug 觸發一般獎勵 (改用 key)
+    window.debugTrigger = (key) => {
+        executeReward(key);
     };
 
-    // 新增：Debug 觸發爆擊
+    // 修改：Debug 觸發爆擊
     window.debugCritical = () => { triggerCriticalWipe(); };
 
     window.handleClearData = async () => {
@@ -883,62 +940,13 @@
     }
 
     function triggerReward() {
-        sfx.reward();
-        const rewards = ["RECOVER (+1 HP)", "FLASH (Freeze 3s)", "SHOTGUN (Knockback All)"];
+        const rewards = ["RECOVER", "FLASH", "SHOTGUN"];
         const roll = Math.floor(Math.random() * rewards.length);
-        const toast = document.getElementById('reward-toast');
-        const overlay = document.getElementById('flash-overlay');
-
-        toast.innerText = `REWARD: ${rewards[roll]}`;
-        toast.classList.add('toast-active');
-        
-        overlay.style.transition = "opacity 0.5s ease-out";
-
-        if (roll === 0) {
-            state.hp = Math.min(5, state.hp + 1);
-            toast.style.color = '#4ade80'; toast.style.borderColor = '#4ade80'; toast.style.boxShadow = '0 0 25px rgba(74, 222, 128, 0.6)';
-            overlay.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; overlay.style.opacity = "1";
-            setTimeout(() => overlay.style.opacity = "0", 600);
-        } else if (roll === 1) {
-            state.freezeTimer = 180; 
-            toast.style.color = '#67e8f9'; toast.style.borderColor = '#67e8f9'; toast.style.boxShadow = '0 0 25px rgba(103, 232, 249, 0.6)';
-            overlay.style.backgroundColor = 'white'; overlay.style.transition = "opacity 1.5s ease-out"; overlay.style.opacity = "1";
-            setTimeout(() => overlay.style.opacity = "0", 1500);
-        } else if (roll === 2) {
-            toast.style.color = '#fbbf24'; toast.style.borderColor = '#fbbf24'; toast.style.boxShadow = '0 0 25px rgba(251, 191, 36, 0.6)';
-            state.enemies.forEach(e => { if (!e.isDying) e.z = Math.max(0, e.z - 0.4); });
-            state.shake = 60; state.freezeTimer = 60; 
-            overlay.style.transition = "opacity 0.1s ease-in"; overlay.style.backgroundColor = 'rgba(255, 200, 50, 0.6)'; overlay.style.opacity = "0.8";
-            setTimeout(() => overlay.style.opacity = "0", 100);
-        }
-        
-        setTimeout(() => {
-            toast.classList.remove('toast-active'); toast.style.color = '#fff'; toast.style.borderColor = '#fff'; toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
-            setTimeout(() => overlay.style.backgroundColor = 'white', 500);
-        }, 2000);
+        executeReward(rewards[roll]);
     }
 
     function triggerCriticalWipe() {
-        state.hp = 5;
-        updateUIPanel(); 
-
-        const toast = document.getElementById('reward-toast');
-        const overlay = document.getElementById('flash-overlay');
-
-        toast.innerText = "CRITICAL OVERLOAD & FULL HEAL!";
-        toast.classList.add('toast-active');
-        
-        toast.style.color = '#d946ef'; toast.style.borderColor = '#d946ef'; toast.style.boxShadow = '0 0 40px rgba(217, 70, 239, 0.9)'; 
-        overlay.style.backgroundColor = 'rgba(217, 70, 239, 0.6)'; overlay.style.transition = "opacity 0.8s ease-out"; overlay.style.opacity = "1";
-        
-        setTimeout(() => {
-            overlay.style.opacity = "0";
-            toast.classList.remove('toast-active'); toast.style.color = '#fff'; toast.style.borderColor = '#fff'; toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
-            setTimeout(() => overlay.style.backgroundColor = 'white', 500);
-        }, 2000);
-
-        sfx.reward(); 
-
+        executeReward('CRITICAL');
         state.enemies.forEach((e, i) => {
             if (!e.isDying && !e.isBoss) {
                 killEnemy(i, true);
