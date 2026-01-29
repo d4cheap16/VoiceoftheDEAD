@@ -95,14 +95,14 @@
         }
         select:focus, input:focus { border-color: #0f0 !important; }
 
-        /* 隱藏數字輸入框的上下箭頭 (Spin Buttons) */
+        /* 隱藏數字輸入框的上下箭頭 */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
             margin: 0; 
         }
         input[type=number] {
-            -moz-appearance: textfield; /* Firefox */
+            -moz-appearance: textfield; 
         }
 
         .btn {
@@ -143,7 +143,6 @@
         }
         .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
 
-        /* 修改後的獎勵提示樣式：更大、更顯眼 */
         #reward-toast {
             position: absolute; 
             top: 20%; 
@@ -197,6 +196,30 @@
             display: none; /* 預設隱藏 */
         }
 
+        /* Debug Panel 樣式 */
+        #debug-panel {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); pointer-events: none; z-index: 300;
+            display: flex; flex-direction: column; justify-content: flex-start; padding: 10px;
+        }
+        .debug-controls {
+            pointer-events: auto;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #0f0;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 200px;
+            font-size: 8px;
+            color: #0f0;
+        }
+        .debug-btn {
+            background: #003300; border: 1px solid #0f0; color: #0f0;
+            padding: 5px; margin: 2px 0; width: 100%; cursor: pointer;
+            text-align: left;
+        }
+        .debug-btn:hover { background: #005500; }
+        .debug-info { font-family: monospace; white-space: pre-wrap; margin-top: 10px; color: #aaa; font-size: 7px; max-height: 200px; overflow-y: auto;}
+
         /* 心電圖動畫 */
         .ecg-container {
             width: 100%; height: 30px;
@@ -237,7 +260,6 @@
         <div class="banner-box">
             <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
         </div>
-        <!-- 修改標題為 Voice of the Dead -->
         <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Voice of the Dead</h1>
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
@@ -276,7 +298,6 @@
             <input type="text" id="input-name" placeholder="NAME" class="input-retro">
             <p class="text-[8px] text-zinc-600 mt-4 mb-1 uppercase px-1">Challenge Level</p>
             <div class="grid grid-cols-2 gap-2">
-                <!-- 更新難度按鈕文字，顯示倍率 -->
                 <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn diff-rookie" id="diff-rookie">Rookie (x0.7)</button>
                 <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn diff-veteran active-diff" id="diff-veteran">Veteran (x1.0)</button>
                 <button onclick="setDifficulty(1.5, 'Nightmare')" class="btn diff-btn diff-nightmare" id="diff-nightmare">Nightmare (x1.5)</button>
@@ -289,7 +310,17 @@
         </div>
     </div>
 
-    <!-- 管理員終端 -->
+    <!-- 管理員選擇畫面 -->
+    <div id="admin-choice-screen" class="overlay-screen hidden">
+        <h2 class="text-blue-600 mb-6 uppercase text-[14px]">System Access Granted</h2>
+        <div class="flex flex-col gap-4 w-full max-w-xs">
+            <button onclick="showAdmin()" class="btn py-5 bg-zinc-800 text-white border-zinc-500 uppercase">Archive Terminal (Records)</button>
+            <button onclick="enterDebugMode()" class="btn py-5 bg-green-900 text-white border-green-500 uppercase">Combat Sim (Debug/Test)</button>
+            <button onclick="location.reload()" class="btn py-3 text-zinc-500 uppercase mt-4">Logout</button>
+        </div>
+    </div>
+
+    <!-- 管理員終端 (排行榜) -->
     <div id="admin-screen" class="overlay-screen hidden">
         <h2 class="text-blue-600 mb-4 uppercase">Archive Terminal</h2>
         <div class="admin-table-container">
@@ -303,6 +334,20 @@
         <div class="grid grid-cols-2 gap-2 w-full max-w-sm mt-6">
             <button onclick="handleClearData()" id="clear-data-btn" class="btn py-4 bg-red-950 border-red-700 text-red-500 uppercase">Clear All</button>
             <button onclick="location.reload()" class="btn py-4 bg-zinc-900 uppercase">Logout</button>
+        </div>
+    </div>
+
+    <!-- Debug 面板 (遊戲中顯示) -->
+    <div id="debug-panel" class="hidden">
+        <div class="debug-controls">
+            <div class="text-[10px] mb-2 font-bold uppercase text-center border-b border-green-500 pb-1">Debug Controls</div>
+            <button onclick="debugTrigger(0)" class="debug-btn">1. Trigger Heal (+HP)</button>
+            <button onclick="debugTrigger(1)" class="debug-btn">2. Trigger Flash (Freeze)</button>
+            <button onclick="debugTrigger(2)" class="debug-btn">3. Trigger Shotgun (Push)</button>
+            <button onclick="debugCritical()" class="debug-btn text-purple-400 border-purple-500">4. Trigger Critical (Wipe)</button>
+            <button onclick="startBossBattle()" class="debug-btn text-red-400 border-red-500">5. Spawn BOSS</button>
+            <div class="mt-2 text-[7px] text-zinc-400">SPEED PARAMETERS (Reference):</div>
+            <div id="debug-params" class="debug-info"></div>
         </div>
     </div>
 
@@ -334,10 +379,7 @@
             <div class="text-[8px]">NO DAMAGE TAKEN</div>
         </div>
         <p id="win-score-display" class="text-yellow-500 text-5xl mb-4 uppercase">0</p>
-        
-        <!-- 新增詳細資訊面板 -->
         <div id="win-details" class="w-full max-w-xs bg-zinc-900/80 border border-zinc-700 p-3 mb-4 rounded"></div>
-
         <div class="flex flex-col gap-3 w-full max-w-xs">
             <button id="next-level-btn" onclick="challengeNextLevel()" class="btn py-5 bg-blue-900 text-white border-blue-500 uppercase hidden">Challenge Next Level</button>
             <button onclick="location.reload()" class="btn py-4 uppercase">Return Base</button>
@@ -348,10 +390,7 @@
     <div id="game-over-screen" class="overlay-screen hidden">
         <h1 class="text-red-700 text-2xl mb-6 flicker uppercase">You are dead</h1>
         <p id="fail-score-display" class="text-yellow-500 text-5xl mb-4 uppercase">0</p>
-        
-        <!-- 新增詳細資訊面板 -->
         <div id="fail-details" class="w-full max-w-xs bg-zinc-900/80 border border-zinc-700 p-3 mb-4 rounded"></div>
-
         <div class="flex flex-col gap-3 w-full max-w-xs">
             <button onclick="restartGame()" class="btn py-5 bg-red-950 text-white border-red-700 uppercase">Retry Mission</button>
             <button onclick="location.reload()" class="btn py-4 text-zinc-500 uppercase">Back to Login</button>
@@ -418,7 +457,7 @@
 <script>
     const ADMIN_KEY = "AdaWong";
     
-    // 背景圖清單 (隨機抽選圖庫) - 確保 BG05 被加入
+    // 背景圖清單
     const BGS = [
         "https://d4cheap16.github.io/VoiceoftheDEAD/BG01.png",
         "https://d4cheap16.github.io/VoiceoftheDEAD/BG02.png",
@@ -427,16 +466,8 @@
         "https://d4cheap16.github.io/VoiceoftheDEAD/BG05.png"
     ];
 
-    // BOSS 戰句子數量設定 (血量)
-    const BOSS_QUOTAS = {
-        'Rookie': 1,
-        'Veteran': 2,
-        'Nightmare': 3,
-        'NoHope': 5
-    };
+    const BOSS_QUOTAS = { 'Rookie': 1, 'Veteran': 2, 'Nightmare': 3, 'NoHope': 5 };
 
-    // BOSS 逼近速度 (攻擊頻率)
-    // 數值越大，BOSS 走得越快。建議範圍 0.0003 (慢) ~ 0.0025 (極快)
     const BOSS_SPEEDS = {
         'Rookie': 0.0010,    
         'Veteran': 0.0013,   
@@ -444,8 +475,6 @@
         'NoHope': 0.0020     
     };
 
-    // 新增：一般敵人逼近速度 (最小值 ~ 最大值)
-    // 遊戲會在此範圍內隨機決定每隻殭屍的速度
     const ENEMY_SPEEDS = {
         'Rookie':   { min: 0.0005, max: 0.0010 },
         'Veteran':  { min: 0.0008, max: 0.0016 },
@@ -499,7 +528,8 @@
         wordPool: [],
         sentencePool: [],
         damageAlpha: 0,
-        damageTaken: 0 // 新增：追蹤受傷次數
+        damageTaken: 0,
+        debugMode: false // 新增：Debug 模式旗標
     };
 
     const canvas = document.getElementById('game-canvas');
@@ -644,7 +674,12 @@
 
     window.handleAuth = async () => {
         const nameInput = document.getElementById('input-name').value.trim();
-        if(nameInput === ADMIN_KEY) return showAdmin();
+        // 修改：如果輸入 Admin Key，顯示選擇畫面
+        if(nameInput === ADMIN_KEY) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('admin-choice-screen').classList.remove('hidden');
+            return;
+        }
         const grade = document.getElementById('select-grade').value;
         const className = document.getElementById('select-class').value;
         const no = document.getElementById('input-no').value.trim();
@@ -656,6 +691,7 @@
     };
 
     async function showAdmin() {
+        document.getElementById('admin-choice-screen').classList.add('hidden'); // 隱藏選擇畫面
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('admin-screen').classList.remove('hidden');
         const body = document.getElementById('records-body');
@@ -672,6 +708,57 @@
             body.innerHTML = res.map(d => `<tr><td class="text-blue-400 font-bold">${d.class}</td><td>${d.no}</td><td class="text-zinc-200">${d.name}</td><td class="text-green-500 font-bold">${d.score}</td><td class="text-zinc-100 text-[14px] font-bold">${d.difficulty || 'N/A'}</td></tr>`).join('');
         } catch(e) { body.innerHTML = "SYSTEM ERROR"; }
     }
+
+    // 新增：進入 Debug 模式
+    window.enterDebugMode = () => {
+        document.getElementById('admin-choice-screen').classList.add('hidden');
+        state.debugMode = true;
+        // 設定假玩家資訊
+        state.player = { name: "TEST_UNIT", no: "00", class: "DEBUG" };
+        
+        // 填充參數列表
+        const paramDiv = document.getElementById('debug-params');
+        paramDiv.innerText = `BOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}`;
+        
+        startGame();
+    };
+
+    // 新增：Debug 觸發一般獎勵
+    window.debugTrigger = (roll) => {
+        sfx.reward();
+        const rewards = ["RECOVER (+1 HP)", "FLASH (Freeze 3s)", "SHOTGUN (Knockback All)"];
+        const toast = document.getElementById('reward-toast');
+        const overlay = document.getElementById('flash-overlay');
+
+        toast.innerText = `REWARD: ${rewards[roll]}`;
+        toast.classList.add('toast-active');
+        overlay.style.transition = "opacity 0.5s ease-out";
+
+        if (roll === 0) {
+            state.hp = Math.min(5, state.hp + 1);
+            toast.style.color = '#4ade80'; toast.style.borderColor = '#4ade80'; toast.style.boxShadow = '0 0 25px rgba(74, 222, 128, 0.6)';
+            overlay.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; overlay.style.opacity = "1";
+            setTimeout(() => overlay.style.opacity = "0", 600);
+        } else if (roll === 1) {
+            state.freezeTimer = 180; 
+            toast.style.color = '#67e8f9'; toast.style.borderColor = '#67e8f9'; toast.style.boxShadow = '0 0 25px rgba(103, 232, 249, 0.6)';
+            overlay.style.backgroundColor = 'white'; overlay.style.transition = "opacity 1.5s ease-out"; overlay.style.opacity = "1";
+            setTimeout(() => overlay.style.opacity = "0", 1500);
+        } else if (roll === 2) {
+            toast.style.color = '#fbbf24'; toast.style.borderColor = '#fbbf24'; toast.style.boxShadow = '0 0 25px rgba(251, 191, 36, 0.6)';
+            state.enemies.forEach(e => { if (!e.isDying) e.z = Math.max(0, e.z - 0.4); });
+            state.shake = 60; state.freezeTimer = 60; 
+            overlay.style.transition = "opacity 0.1s ease-in"; overlay.style.backgroundColor = 'rgba(255, 200, 50, 0.6)'; overlay.style.opacity = "0.8";
+            setTimeout(() => overlay.style.opacity = "0", 100);
+        }
+        setTimeout(() => {
+            toast.classList.remove('toast-active'); toast.style.color = '#fff'; toast.style.borderColor = '#fff'; toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+            setTimeout(() => overlay.style.backgroundColor = 'white', 500);
+        }, 2000);
+    };
+
+    // 新增：Debug 觸發爆擊
+    window.debugCritical = () => { triggerCriticalWipe(); };
 
     window.handleClearData = async () => {
         const btn = document.getElementById('clear-data-btn');
@@ -694,7 +781,6 @@
         document.getElementById(`diff-${mode.toLowerCase().replace(" ", "")}`).classList.add('active-diff');
     };
 
-    // 新增：挑戰下一個難度
     window.challengeNextLevel = () => {
         const diffMap = {
             'Rookie': { val: 1.0, mode: 'Veteran' },
@@ -705,7 +791,6 @@
         if (next) {
             setDifficulty(next.val, next.mode);
             document.getElementById('win-screen').classList.add('hidden');
-            // 修改：傳入 true 以保留分數
             startGame(true);
         }
     };
@@ -726,12 +811,11 @@
             this.z = (state.difficultyMode === 'Rookie' && !isBoss) ? 0.25 : 0;
             this.x = (Math.random() - 0.5) * 380; this.y = (Math.random() - 0.5) * 30;
             
-            // 修改：使用 ENEMY_SPEEDS 設定表計算速度
             if (!isBoss) {
                 const settings = ENEMY_SPEEDS[state.difficultyMode] || ENEMY_SPEEDS['Veteran'];
                 this.speed = settings.min + Math.random() * (settings.max - settings.min);
             } else {
-                this.speed = 0; // Boss 速度由 update 中的 BOSS_SPEEDS 控制
+                this.speed = 0; 
             }
 
             this.isDying = false; this.opacity = 1; this.wobbleSeed = Math.random() * 1000;
@@ -743,7 +827,6 @@
         update() {
             if (this.isDying) { this.opacity -= 0.2; return this.opacity <= 0; }
             if (state.freezeTimer <= 0) {
-                // 修改：BOSS 使用獨立的速度參數表 BOSS_SPEEDS
                 if (state.bossMode && this.isBoss) {
                     this.z += (BOSS_SPEEDS[state.difficultyMode] || 0.0008); 
                 }
@@ -756,13 +839,9 @@
             const size = Math.min(w * 0.55, (15 + Math.pow(this.z, 2) * 280) * scale);
             const wobbleX = Math.sin(Date.now() * 0.004 + this.wobbleSeed) * 10 * this.z;
             
-            // 新增：走路上下起伏 (Bobbing)
-            // Math.sin 產生 -1 到 1 的值，Math.abs 讓它變成 0 到 1 (只會向上彈跳)
-            // 乘以 z 讓遠處起伏小，近處起伏大
             const walkBounce = Math.abs(Math.sin(Date.now() * 0.008 + this.wobbleSeed)) * 20 * this.z;
 
             const screenX = w/2 + (this.x * this.z) + wobbleX;
-            // 將起伏應用在 Y 軸，減去 walkBounce 代表向上移動
             const screenY = h/2 + (this.y * this.z) + (this.z * h * 0.4) - walkBounce;
             
             ctx.save(); ctx.globalAlpha = this.opacity; ctx.translate(screenX, screenY);
@@ -789,6 +868,16 @@
                 ctx.fillStyle = isClosest ? '#fff' : '#444'; ctx.textAlign = 'center';
                 ctx.shadowBlur = 4; ctx.shadowColor = "#000"; ctx.fillText(this.word.toUpperCase(), 0, -size * 1.05);
             }
+
+            // 新增：Debug 模式下顯示速度
+            if (state.debugMode && !this.isBoss) {
+                ctx.font = `8px monospace`;
+                ctx.fillStyle = "#0f0";
+                // 根據模式不同顯示不同速度來源
+                const spd = state.bossMode ? (BOSS_SPEEDS[state.difficultyMode] || 0) : this.speed;
+                ctx.fillText(`SPD:${spd.toFixed(5)}`, 0, -size * 1.3);
+            }
+
             ctx.restore();
         }
     }
@@ -803,63 +892,28 @@
         toast.innerText = `REWARD: ${rewards[roll]}`;
         toast.classList.add('toast-active');
         
-        // 重置 Overlay 轉場
         overlay.style.transition = "opacity 0.5s ease-out";
 
         if (roll === 0) {
-            // RECOVER: 綠色主題，更明顯的綠色閃光
             state.hp = Math.min(5, state.hp + 1);
-            
-            toast.style.color = '#4ade80'; // 亮綠色文字
-            toast.style.borderColor = '#4ade80';
-            toast.style.boxShadow = '0 0 25px rgba(74, 222, 128, 0.6)';
-
-            overlay.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // 綠色濾鏡
-            overlay.style.opacity = "1";
+            toast.style.color = '#4ade80'; toast.style.borderColor = '#4ade80'; toast.style.boxShadow = '0 0 25px rgba(74, 222, 128, 0.6)';
+            overlay.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; overlay.style.opacity = "1";
             setTimeout(() => overlay.style.opacity = "0", 600);
-
         } else if (roll === 1) {
-            // FLASH: 青色/白色主題，更強烈且持久的白光
             state.freezeTimer = 180; 
-            
-            toast.style.color = '#67e8f9'; // 青色文字
-            toast.style.borderColor = '#67e8f9';
-            toast.style.boxShadow = '0 0 25px rgba(103, 232, 249, 0.6)';
-
-            overlay.style.backgroundColor = 'white'; // 純白強光
-            overlay.style.transition = "opacity 1.5s ease-out"; // 延長淡出時間，模擬視覺殘留
-            overlay.style.opacity = "1"; // 全不透明 (致盲感)
+            toast.style.color = '#67e8f9'; toast.style.borderColor = '#67e8f9'; toast.style.boxShadow = '0 0 25px rgba(103, 232, 249, 0.6)';
+            overlay.style.backgroundColor = 'white'; overlay.style.transition = "opacity 1.5s ease-out"; overlay.style.opacity = "1";
             setTimeout(() => overlay.style.opacity = "0", 1500);
-
         } else if (roll === 2) {
-            // SHOTGUN: 橘黃色主題，強烈震動 (Shake 已在下面設定)
-            
-            toast.style.color = '#fbbf24'; // 琥珀色文字
-            toast.style.borderColor = '#fbbf24';
-            toast.style.boxShadow = '0 0 25px rgba(251, 191, 36, 0.6)';
-
-            state.enemies.forEach(e => {
-                if (!e.isDying) {
-                    e.z = Math.max(0, e.z - 0.4);
-                }
-            });
-            state.shake = 60; 
-            state.freezeTimer = 60; 
-            
-            // 槍口火光 (瞬間閃黃光)
-            overlay.style.transition = "opacity 0.1s ease-in";
-            overlay.style.backgroundColor = 'rgba(255, 200, 50, 0.6)';
-            overlay.style.opacity = "0.8";
+            toast.style.color = '#fbbf24'; toast.style.borderColor = '#fbbf24'; toast.style.boxShadow = '0 0 25px rgba(251, 191, 36, 0.6)';
+            state.enemies.forEach(e => { if (!e.isDying) e.z = Math.max(0, e.z - 0.4); });
+            state.shake = 60; state.freezeTimer = 60; 
+            overlay.style.transition = "opacity 0.1s ease-in"; overlay.style.backgroundColor = 'rgba(255, 200, 50, 0.6)'; overlay.style.opacity = "0.8";
             setTimeout(() => overlay.style.opacity = "0", 100);
         }
         
-        // 2秒後重置 Toast 樣式
         setTimeout(() => {
-            toast.classList.remove('toast-active');
-            toast.style.color = '#fff';
-            toast.style.borderColor = '#fff';
-            toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
-            // Overlay 顏色重置 (避免影響下一次)
+            toast.classList.remove('toast-active'); toast.style.color = '#fff'; toast.style.borderColor = '#fff'; toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
             setTimeout(() => overlay.style.backgroundColor = 'white', 500);
         }, 2000);
     }
@@ -874,22 +928,12 @@
         toast.innerText = "CRITICAL OVERLOAD & FULL HEAL!";
         toast.classList.add('toast-active');
         
-        // 紫色爆擊主題
-        toast.style.color = '#d946ef'; 
-        toast.style.borderColor = '#d946ef';
-        toast.style.boxShadow = '0 0 40px rgba(217, 70, 239, 0.9)'; // 更強的光暈
-
-        // 紫色強光
-        overlay.style.backgroundColor = 'rgba(217, 70, 239, 0.6)';
-        overlay.style.transition = "opacity 0.8s ease-out";
-        overlay.style.opacity = "1";
+        toast.style.color = '#d946ef'; toast.style.borderColor = '#d946ef'; toast.style.boxShadow = '0 0 40px rgba(217, 70, 239, 0.9)'; 
+        overlay.style.backgroundColor = 'rgba(217, 70, 239, 0.6)'; overlay.style.transition = "opacity 0.8s ease-out"; overlay.style.opacity = "1";
         
         setTimeout(() => {
             overlay.style.opacity = "0";
-            toast.classList.remove('toast-active');
-            toast.style.color = '#fff';
-            toast.style.borderColor = '#fff';
-            toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+            toast.classList.remove('toast-active'); toast.style.color = '#fff'; toast.style.borderColor = '#fff'; toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
             setTimeout(() => overlay.style.backgroundColor = 'white', 500);
         }, 2000);
 
@@ -918,23 +962,24 @@
         return state.sentencePool.pop();
     }
 
-    // 修改 startGame：新增 keepScore 參數，預設為 false
     function startGame(keepScore = false) {
         randomizeBackground(); 
         state.gameActive = true; 
         state.hp = 5; 
-        // 只有不保留分數時才重置
-        if (!keepScore) {
-            state.score = 0; 
-        }
+        if (!keepScore) { state.score = 0; }
         state.kills = 0; 
         state.bossesDefeated = 0;
         state.enemies = []; state.particles = []; state.combo = 0; state.freezeTimer = 0;
         state.wordPool = []; state.sentencePool = []; state.bossMode = false;
         state.damageAlpha = 0; 
-        state.damageTaken = 0; // 重置受傷次數
+        state.damageTaken = 0; 
         document.getElementById('boss-ui').style.opacity = '0';
-        document.getElementById('perfect-badge').style.display = 'none'; // 隱藏完美徽章
+        document.getElementById('perfect-badge').style.display = 'none'; 
+        
+        // 根據 Debug 模式顯示面板
+        if(state.debugMode) document.getElementById('debug-panel').classList.remove('hidden');
+        else document.getElementById('debug-panel').classList.add('hidden');
+
         requestWakeLock(); handleResize(); initSpeech(); requestAnimationFrame(gameLoop);
         sfx.init();
     }
@@ -979,12 +1024,9 @@
             const target = clean(state.bossData.words[state.bossWordIndex]);
             if (input.includes(target)) { lastMatchedWord = target; hitBoss(); }
         } else {
-            // 修改：多重目標鎖定機制 (Shotgun Logic)
-            // 找出所有符合輸入單字的敵人
             const matchedEnemies = state.enemies.filter(e => !e.isDying && input.includes(clean(e.word)));
             
             if (matchedEnemies.length > 0) {
-                // 如果有多個敵人符合，優先殺掉距離最近的 (Z 值最大)
                 matchedEnemies.sort((a,b) => b.z - a.z);
                 const target = matchedEnemies[0];
                 lastMatchedWord = clean(target.word);
@@ -997,7 +1039,6 @@
         const en = state.enemies[idx]; if(!en) return;
         en.isDying = true; 
         
-        // 新的分數計算：基礎分(100) + Combo加成(Combo*10) * 難度倍率
         let scoreGain = (100 + (state.combo * 10)) * state.difficulty;
         state.score += scoreGain;
 
@@ -1005,7 +1046,6 @@
         
         if(!isAuto) {
             state.combo++;
-            // 修改：Combo 獎勵改為連續 7 次殺敵
             if(state.combo > 0 && state.combo % 7 === 0) triggerReward();
             
             if (Math.random() < 0.01 && !state.bossMode) {
@@ -1047,14 +1087,13 @@
         if (state.bossWordIndex >= state.bossData.words.length) {
             state.enemies[0].isDying = true; state.bossesDefeated++;
             
-            // 修正 Boss 邏輯: 依照難度決定是否通關
             setTimeout(() => {
                 const required = BOSS_QUOTAS[state.difficultyMode] || 1;
                 
                 if (state.bossesDefeated < required) {
-                     startBossBattle(); // 繼續打下一隻 Boss
+                     startBossBattle(); 
                 } else {
-                     winGame(); // 通關
+                     winGame(); 
                 }
             }, 800);
         } else updateBossUI();
@@ -1069,7 +1108,7 @@
 
     function triggerDamage() {
         state.hp--; state.shake = 35; state.combo = 0; 
-        state.damageTaken++; // 記錄受傷
+        state.damageTaken++; 
         sfx.damage();
         
         state.damageAlpha = 0.8; 
@@ -1086,18 +1125,14 @@
         ctx.setTransform(1, 0, 0, 1, 0, 0); 
         ctx.clearRect(0, 0, canvas.width, canvas.height); 
         
-        // 2. 震動效果 (受傷或其他)
         if (state.shake > 0) { 
             ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); 
             state.shake *= 0.88; 
             if(state.shake < 0.5) state.shake = 0;
         }
 
-        // 新增：BOSS 逼近震動 (腳步壓迫感)
         const boss = state.enemies.find(e => e.isBoss);
-        // 當 BOSS 距離大於 0.4 (接近玩家) 時開始震動
         if (state.bossMode && boss && boss.z > 0.4) {
-            // 震動幅度隨距離增加 (0.4 -> 1.0)
             const proximityIntensity = (boss.z - 0.4) * 20; 
             const shakeY = (Math.random() - 0.5) * proximityIntensity;
             ctx.translate(0, shakeY);
@@ -1112,7 +1147,6 @@
             if (state.freezeTimer <= 0) s.z += 0.003; if (s.z > 1) s.z = 0;
         });
 
-        // 生成頻率調整：從 1800 改為 2200，讓敵人出現間隔變長
         if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > 2200/state.difficulty) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
@@ -1190,7 +1224,6 @@
         } catch(e){}
     }
 
-    // 輔助函式：更新結果面板
     function updateResultDetails(elId) {
         const el = document.getElementById(elId);
         if(!el) return;
@@ -1220,17 +1253,14 @@
         document.getElementById('win-score-display').innerText = Math.floor(state.score); 
         document.getElementById('win-screen').classList.remove('hidden'); 
 
-        // 更新勝利畫面資訊
         updateResultDetails('win-details');
 
-        // 判斷是否顯示完美通關勳章
         if (state.damageTaken === 0) {
             const badge = document.getElementById('perfect-badge');
             badge.style.display = 'block';
             sfx.perfect();
         }
 
-        // 判斷是否顯示 "Challenge Next Level" 按鈕
         const btn = document.getElementById('next-level-btn');
         if (state.difficultyMode !== 'NoHope') {
             btn.classList.remove('hidden');
@@ -1249,7 +1279,6 @@
         document.getElementById('fail-score-display').innerText = Math.floor(state.score); 
         document.getElementById('game-over-screen').classList.remove('hidden'); 
         
-        // 更新死亡畫面資訊
         updateResultDetails('fail-details');
         
         syncData(); 
