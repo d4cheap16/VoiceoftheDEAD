@@ -7,8 +7,8 @@
     
     <title>Voice of the Dead</title>
     <meta name="description" content="Want to Survive? Speak!">
-    <meta property="og:title" content="Speak your way out. - Voice of the Dead">
-    <meta property="og:description" content="面對恐懼，用聲音在末日中生存。這是一場結合聲音辨識與節奏的生存挑戰。">
+    <meta property="og:title" content="Speak your way out.">
+    <meta property="og:description" content="用聲音在末日中生存。">
     <meta property="og:image" content="https://d4cheap16.github.io/VoiceoftheDEAD/opentag.png">
     <meta property="og:type" content="website">
 
@@ -220,7 +220,8 @@
         <div class="banner-box">
             <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
         </div>
-        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Select Sector</h1>
+        <!-- 修改標題為 Voice of the Dead -->
+        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Voice of the Dead</h1>
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
             <div class="grid grid-cols-5 gap-1 mb-6" id="book-grid"></div>
@@ -679,7 +680,8 @@
             this.word = word; this.isBoss = isBoss; 
             this.z = (state.difficultyMode === 'Rookie' && !isBoss) ? 0.25 : 0;
             this.x = (Math.random() - 0.5) * 380; this.y = (Math.random() - 0.5) * 30;
-            this.speed = (0.0012 + Math.random() * 0.0008) * state.difficulty;
+            // 降低速度：從 0.0012 改為 0.0008
+            this.speed = (0.0008 + Math.random() * 0.0008) * state.difficulty;
             this.isDying = false; this.opacity = 1; this.wobbleSeed = Math.random() * 1000;
             const greens = [100, 120, 140, 160];
             this.skinHue = greens[Math.floor(Math.random() * greens.length)];
@@ -833,14 +835,21 @@
         const clean = (s) => s.replace(/[.,!?]/g, "").trim().toLowerCase();
         const input = clean(text);
         if (!input || input === lastMatchedWord) return;
+
         if (state.bossMode) {
             const target = clean(state.bossData.words[state.bossWordIndex]);
             if (input.includes(target)) { lastMatchedWord = target; hitBoss(); }
         } else {
-            const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
-            if (closest) {
-                const target = clean(closest.word);
-                if (input.includes(target)) { lastMatchedWord = target; killEnemy(state.enemies.indexOf(closest)); }
+            // 修改：多重目標鎖定機制 (Shotgun Logic)
+            // 找出所有符合輸入單字的敵人
+            const matchedEnemies = state.enemies.filter(e => !e.isDying && input.includes(clean(e.word)));
+            
+            if (matchedEnemies.length > 0) {
+                // 如果有多個敵人符合，優先殺掉距離最近的 (Z 值最大)
+                matchedEnemies.sort((a,b) => b.z - a.z);
+                const target = matchedEnemies[0];
+                lastMatchedWord = clean(target.word);
+                killEnemy(state.enemies.indexOf(target));
             }
         }
     }
@@ -948,7 +957,8 @@
             if (state.freezeTimer <= 0) s.z += 0.003; if (s.z > 1) s.z = 0;
         });
 
-        if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > 1800/state.difficulty) {
+        // 生成頻率調整：從 1800 改為 2200，讓敵人出現間隔變長
+        if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > 2200/state.difficulty) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
 
