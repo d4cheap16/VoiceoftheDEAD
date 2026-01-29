@@ -61,19 +61,10 @@
             gap: 12px; z-index: 50; box-sizing: border-box;
         }
 
-        .btn {
-            background: #111; border: 1px solid #444; color: #ccc;
-            padding: 10px; cursor: pointer; font-size: 9px;
-            font-family: 'Press Start 2P', cursive;
-            transition: 0.1s; border-radius: 4px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .btn:active { background: #555; color: #fff; transform: scale(0.95); }
-
-        /* 修復選單樣式 */
+        /* 修復選單與輸入框樣式 */
         select, input {
             background: #0d0d0d !important;
-            border: 1px solid #444 !important;
+            border: 1px solid #333 !important;
             color: #0f0 !important;
             padding: 12px !important;
             font-size: 10px !important;
@@ -82,8 +73,18 @@
             border-radius: 4px !important;
             font-family: 'Press Start 2P', 'Noto Sans TC', sans-serif !important;
             outline: none;
+            box-sizing: border-box;
         }
         select:focus, input:focus { border-color: #0f0 !important; }
+
+        .btn {
+            background: #111; border: 1px solid #444; color: #ccc;
+            padding: 10px; cursor: pointer; font-size: 9px;
+            font-family: 'Press Start 2P', cursive;
+            transition: 0.1s; border-radius: 6px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .btn:active { background: #555; color: #fff; transform: scale(0.95); }
 
         .btn-empty { color: #444 !important; border-style: dashed !important; cursor: not-allowed; background: #050505 !important; }
 
@@ -102,10 +103,10 @@
         .banner-box img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
 
         /* 難度顏色提示樣式 */
-        .diff-rookie.active-diff { background: #063d19 !important; border-color: #0f0 !important; color: #0f0 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); }
-        .diff-veteran.active-diff { background: #002244 !important; border-color: #0af !important; color: #0af !important; box-shadow: 0 0 10px rgba(0, 170, 255, 0.2); }
-        .diff-nightmare.active-diff { background: #330044 !important; border-color: #f0f !important; color: #f0f !important; box-shadow: 0 0 10px rgba(255, 0, 255, 0.2); }
-        .diff-nohope.active-diff { background: #330000 !important; border-color: #f00 !important; color: #f00 !important; box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
+        .diff-rookie.active-diff { background: #063d19 !important; border-color: #0f0 !important; color: #0f0 !important; box-shadow: 0 0 15px rgba(0, 255, 0, 0.3); }
+        .diff-veteran.active-diff { background: #002244 !important; border-color: #0af !important; color: #0af !important; box-shadow: 0 0 15px rgba(0, 170, 255, 0.3); }
+        .diff-nightmare.active-diff { background: #330044 !important; border-color: #f0f !important; color: #f0f !important; box-shadow: 0 0 15px rgba(255, 0, 255, 0.3); }
+        .diff-nohope.active-diff { background: #440000 !important; border-color: #f00 !important; color: #f00 !important; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
 
         .diff-btn .zh-hint { font-size: 7px; margin-top: 4px; font-family: 'Noto Sans TC'; opacity: 0.8; }
         
@@ -155,11 +156,11 @@
             <div class="grid grid-cols-5 gap-1 mb-6" id="book-grid"></div>
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Unit Module</p>
             <div class="grid grid-cols-3 gap-1 mb-6" id="lesson-grid"></div>
-            <div id="mission-status" class="text-[7px] text-zinc-400 mb-6 h-4 uppercase">System Ready</div>
+            <div id="mission-status" class="text-[7px] text-zinc-400 mb-6 h-4 uppercase tracking-tighter">System Ready</div>
             
             <div id="leaderboard-preview" class="hidden bg-zinc-900/50 p-2 rounded">
                 <p class="text-[7px] text-blue-500 mb-2 uppercase text-center font-bold tracking-widest">Sector Top Survivors</p>
-                <div id="top-records-list" class="text-[8px] text-zinc-400 space-y-1 text-left"></div>
+                <div id="top-records-list" class="text-[8px] text-zinc-400 space-y-1 text-left px-2"></div>
             </div>
 
             <button onclick="confirmMission()" id="confirm-mission-btn" class="btn w-full py-5 text-white bg-blue-900 border-blue-500 mt-4 uppercase" disabled>Enter Mission</button>
@@ -172,7 +173,7 @@
             <img src="https://d4cheap16.github.io/VoiceoftheDEAD/missionbanner.png" alt="Mission Banner" onerror="this.style.display='none'">
         </div>
         <h2 id="selected-mission-title" class="text-blue-500 mb-6 text-[11px] uppercase tracking-widest">MISSION ID</h2>
-        <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm space-y-5 rounded-lg">
+        <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm space-y-4 rounded-lg">
             <div class="flex gap-2">
                 <select id="select-grade">
                     <option value="G10">10</option><option value="G11">11</option><option value="G12">12</option>
@@ -262,6 +263,7 @@
         <canvas id="game-canvas"></canvas>
     </div>
 
+    <!-- 主 UI 面板 -->
     <div class="ui-panel">
         <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
             <div>
@@ -503,7 +505,7 @@
         const btn = document.getElementById('clear-data-btn');
         if (!clearConfirm) {
             clearConfirm = true; btn.innerText = "ARE YOU SURE?"; btn.classList.add('bg-red-600');
-            setTimeout(() => { clearConfirm = false; btn.innerText = "Clear All"; btn.classList.remove('bg-red-600'); }, 3000);
+            setTimeout(() => { if(clearConfirm) { clearConfirm = false; btn.innerText = "Clear All"; btn.classList.remove('bg-red-600'); } }, 3000);
             return;
         }
         const { db, appId, collection, getDocs, deleteDoc, doc } = window.fbase;
@@ -551,12 +553,14 @@
         }
         draw(ctx, w, h, isClosest) {
             const scale = this.isBoss ? 2.5 : 1.0;
-            const size = Math.min(w * 0.6, (15 + Math.pow(this.z, 2) * 280) * scale);
+            // 強制限制繪圖尺寸，防止撞擊瞬間撐爆螢幕
+            const size = Math.min(w * 0.55, (15 + Math.pow(this.z, 2) * 280) * scale);
             const wobbleX = Math.sin(Date.now() * 0.004 + this.wobbleSeed) * 10 * this.z;
             const screenX = w/2 + (this.x * this.z) + wobbleX;
             const screenY = h/2 + (this.y * this.z) + (this.z * h * 0.4);
             ctx.save(); ctx.globalAlpha = this.opacity; ctx.translate(screenX, screenY);
             
+            // Minecraft 殭屍結構
             ctx.fillStyle = `hsl(${this.clothesHue}, 40%, 35%)`;
             ctx.fillRect(-size/3, -size/2.5, size/1.5, size/1.2); 
             ctx.fillStyle = `hsl(210, 30%, 20%)`;
@@ -644,24 +648,40 @@
         recognition.onresult = (e) => {
             if(!state.gameActive || state.isPaused) return;
             let finalTranscript = "";
+            let interimTranscript = "";
             for (let i = e.resultIndex; i < e.results.length; i++) {
                 if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript.toLowerCase();
+                else interimTranscript += e.results[i][0].transcript.toLowerCase();
             }
+            // 優先處理完成辨識的內容，若 interim 已經包含關鍵字也進行處理（提升感應度）
             if(finalTranscript) processCommand(finalTranscript);
+            else if(interimTranscript.length > 2) processCommand(interimTranscript);
         };
         recognition.onend = () => { if(state.gameActive && !state.isPaused) try { recognition.start(); } catch(e){} };
         recognition.start();
     }
 
+    let lastMatchedWord = "";
     function processCommand(text) {
         const clean = (s) => s.replace(/[.,!?]/g, "").trim().toLowerCase();
         const input = clean(text);
+        if (!input || input === lastMatchedWord) return;
+
         if (state.bossMode) {
             const target = clean(state.bossData.words[state.bossWordIndex]);
-            if (input.includes(target)) hitBoss();
+            if (input.includes(target)) {
+                lastMatchedWord = target;
+                hitBoss();
+            }
         } else {
             const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
-            if (closest && input.includes(clean(closest.word))) killEnemy(state.enemies.indexOf(closest));
+            if (closest) {
+                const target = clean(closest.word);
+                if (input.includes(target)) {
+                    lastMatchedWord = target;
+                    killEnemy(state.enemies.indexOf(closest));
+                }
+            }
         }
     }
 
@@ -716,12 +736,15 @@
     function createExplosion(en) {
         const rect = canvas.parentElement.getBoundingClientRect();
         const x = rect.width/2 + (en.x * en.z);
-        const y = rect.height/2 + (en.y * en.z) + (en.z * rect.height * 0.4);
+        const y = rect.height/2 + (en.y * en.z) + (en.z * rect.height * 0.45);
         for(let i=0; i<15; i++) state.particles.push(new Particle(x, y, `hsl(${en.skinHue}, 40%, 40%)`));
     }
 
     function triggerDamage() {
         state.hp--; state.shake = 35; state.combo = 0; sfx.damage();
+        const rect = canvas.parentElement.getBoundingClientRect();
+        ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        ctx.fillRect(0, 0, rect.width, rect.height);
         if (state.bossMode && state.enemies[0]) state.enemies[0].z = 0.4;
         if (state.hp <= 0) endGame();
     }
@@ -730,19 +753,32 @@
         if (!state.gameActive || state.isPaused) return;
         const rect = canvas.parentElement.getBoundingClientRect();
         const w = rect.width; const h = rect.height;
-        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h); 
         
-        if (state.shake > 0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake *= 0.88; }
+        // 強制重置畫布變換矩陣並清空畫面，徹底解決色塊殘留
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        ctx.fillStyle = '#050505'; 
+        ctx.fillRect(0, 0, w, h); 
+        
+        // 渲染震動
+        if (state.shake > 0) { 
+            ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); 
+            state.shake *= 0.88; 
+        }
+
         if (state.freezeTimer > 0) state.freezeTimer--;
+        
+        // 背景微星
         ctx.fillStyle = "#222";
         state.bgStars.forEach(s => {
             const sx = w/2 + (s.x * s.z); const sy = h/2 + (s.y * s.z);
             ctx.globalAlpha = 0.4 * s.z; ctx.fillRect(sx, sy, s.s, s.s); ctx.globalAlpha = 1;
             if (state.freezeTimer <= 0) s.z += 0.003; if (s.z > 1) s.z = 0;
         });
+
         if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > 1800/state.difficulty) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
+
         const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             const en = state.enemies[i];
@@ -754,13 +790,16 @@
         for (let i = state.particles.length - 1; i >= 0; i--) {
             if (!state.particles[i].update()) state.particles.splice(i, 1); else state.particles[i].draw(ctx);
         }
-        ctx.setTransform(1, 0, 0, 1, 0, 0); updateUIPanel(); requestAnimationFrame(gameLoop);
+
+        updateUIPanel(); 
+        requestAnimationFrame(gameLoop);
     }
 
     function updateUIPanel() {
         document.getElementById('score-display').innerText = Math.floor(state.score).toString().padStart(6, '0');
         const comboEl = document.getElementById('combo-display');
-        comboEl.style.opacity = state.combo > 1 ? '1' : '0'; comboEl.innerText = `${state.combo} COMBO`;
+        comboEl.style.opacity = state.combo > 1 ? '1' : '0'; 
+        comboEl.innerText = `${state.combo} COMBO`;
         const status = document.getElementById('status-label');
         if (state.hp > 3) { status.innerText = 'FINE'; status.className = 'pixel-font text-green-500 text-[11px] font-bold'; }
         else if (state.hp > 1) { status.innerText = 'CAUTION'; status.className = 'pixel-font text-yellow-500 text-[11px] font-bold'; }
