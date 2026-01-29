@@ -8,7 +8,7 @@
     <title>Voice of the Dead</title>
     <meta name="description" content="Want to Survive? Speak!">
     <meta property="og:title" content="Speak your way out. - Voice of the Dead">
-    <meta property="og:description" content="面對恐懼，用聲音在末日中生存。這是一場結合聲音辨識與節奏的生存挑戰。">
+    <meta property="og:description" content="用聲音在末日中生存。">
     <meta property="og:image" content="https://d4cheap16.github.io/VoiceoftheDEAD/opentag.png">
     <meta property="og:type" content="website">
 
@@ -76,8 +76,8 @@
 
         .ui-panel {
             height: 35%; width: 100%; background: #050505;
-            padding: 15px; display: grid; grid-template-rows: auto 1fr auto; 
-            gap: 12px; z-index: 50; box-sizing: border-box;
+            padding: 10px 15px; display: grid; grid-template-rows: auto 1fr auto; 
+            gap: 8px; z-index: 50; box-sizing: border-box;
         }
 
         select, input {
@@ -152,6 +152,34 @@
 
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         .flicker { animation: flicker 0.2s infinite; }
+
+        /* 心電圖動畫 */
+        .ecg-container {
+            width: 100%; height: 30px;
+            background: #000;
+            border: 1px solid #222;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+        }
+        .ecg-svg {
+            width: 100%;
+            height: 100%;
+        }
+        .ecg-line {
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            animation: dash 2s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
     </style>
 </head>
 <body class="crt">
@@ -165,7 +193,7 @@
         <div class="banner-box">
             <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
         </div>
-        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Select Sector</h1>
+        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Voice of the Dead</h1>
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
             <div class="grid grid-cols-5 gap-1 mb-6" id="book-grid"></div>
@@ -274,13 +302,25 @@
 
     <!-- 主 UI 面板 -->
     <div class="ui-panel">
-        <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <!-- 狀態與心電圖 -->
+        <div class="grid grid-cols-[30%_70%] gap-2 items-center border-b border-zinc-800 pb-2">
             <div>
-                <div id="status-label" class="pixel-font text-green-500 text-[11px] font-bold">FINE</div>
-                <div id="score-display" class="text-[9px] text-zinc-600 pixel-font mt-1 tracking-widest">000000</div>
+                <div id="score-display" class="text-[18px] text-yellow-400 pixel-font mt-1 tracking-widest font-bold" style="text-shadow: 0 0 5px orange;">00000</div>
+                <div class="text-[6px] text-zinc-600 uppercase">Score</div>
             </div>
-            <div id="combo-display" class="pixel-font text-yellow-500 text-[11px] opacity-0 font-bold">0 COMBO</div>
+            <div>
+                <div class="ecg-container">
+                    <svg class="ecg-svg" viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path id="ecg-path" class="ecg-line" d="M0,10 L10,10 L15,0 L20,20 L25,10 L100,10" stroke="lime" />
+                    </svg>
+                </div>
+                <div class="flex justify-between mt-1">
+                    <div id="status-label" class="pixel-font text-green-500 text-[8px] font-bold">VITAL: STABLE</div>
+                    <div id="combo-display" class="pixel-font text-yellow-500 text-[8px] opacity-0 font-bold">0 COMBO</div>
+                </div>
+            </div>
         </div>
+
         <div class="flex flex-col items-center justify-center bg-zinc-900/40 rounded-lg border border-zinc-800 p-2 relative">
             <p class="text-[6px] text-zinc-600 mb-1 uppercase tracking-widest">Targeting</p>
             <div id="current-word-ui" class="text-[12px] text-center text-white font-bold tracking-wider uppercase">AWAITING SIGNAL...</div>
@@ -316,12 +356,13 @@
 <script>
     const ADMIN_KEY = "AdaWong";
     
-    // 背景圖清單 (隨機抽選圖庫)
+    // 背景圖清單 (隨機抽選圖庫) - 確保 BG05 被加入
     const BGS = [
         "https://d4cheap16.github.io/VoiceoftheDEAD/BG01.png",
         "https://d4cheap16.github.io/VoiceoftheDEAD/BG02.png",
         "https://d4cheap16.github.io/VoiceoftheDEAD/BG03.png",
         "https://d4cheap16.github.io/VoiceoftheDEAD/BG04.png",
+        "https://d4cheap16.github.io/VoiceoftheDEAD/BG05.png"
     ];
 
     // --- 8-bit 音效系統 ---
@@ -362,7 +403,8 @@
         shake: 0, bossMode: false, bossData: null, bossWordIndex: 0,
         spawnTimer: 0, player: { name: "", no: "", class: "" },
         wordPool: [],
-        sentencePool: []
+        sentencePool: [],
+        damageAlpha: 0 // 新增：用於受傷紅光閃爍，解決殘影問題
     };
 
     const canvas = document.getElementById('game-canvas');
@@ -373,11 +415,26 @@
     let wakeLock = null;
     let clearConfirm = false; 
 
+    function randomizeBackground() {
+        const randomBg = BGS[Math.floor(Math.random() * BGS.length)];
+        document.getElementById('canvas-holder').style.backgroundImage = `url('${randomBg}')`;
+    }
+    
+    // 新增：預先載入所有背景圖片
+    function preloadImages() {
+        BGS.forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+    }
+
     function initUI() {
         document.getElementById('book-grid').innerHTML = [1,2,3,4,5].map(i => 
             `<button onclick="selectBook(${i})" class="btn book-btn ${i===4?'active-diff':''}" id="b${i}">${['I','II','III','IV','V'][i-1]}</button>`).join('');
         refreshLessonGrid();
         loadSavedProfile();
+        randomizeBackground(); // 初始化時就隨機背景
+        preloadImages(); // 呼叫預載
         state.bgStars = [];
         for(let i=0; i<40; i++) {
             state.bgStars.push({ x: (Math.random() - 0.5) * 600, y: (Math.random() - 0.5) * 400, z: Math.random(), s: Math.random() * 1.5 });
@@ -445,7 +502,8 @@
             let records = [];
             snap.forEach(d => {
                 const data = d.data();
-                if(data.book == selectedBook && data.lesson == lessonId) records.push(data);
+                // 過濾掉管理員 AdaWong 的紀錄
+                if(data.book == selectedBook && data.lesson == lessonId && data.name !== ADMIN_KEY) records.push(data);
             });
             records.sort((a, b) => b.score - a.score);
             const top3 = records.slice(0, 3);
@@ -512,7 +570,12 @@
         try {
             const { db, appId, collection, getDocs } = window.fbase;
             const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'scores'));
-            let res = []; snap.forEach(d => res.push(d.data()));
+            let res = []; 
+            snap.forEach(d => {
+                const data = d.data();
+                // 為了避免混淆，管理員介面也過濾掉自己的測試數據 (如果不需要過濾這行，可以把 if 拿掉)
+                if (data.name !== ADMIN_KEY) res.push(data);
+            });
             res.sort((a,b) => a.class.localeCompare(b.class) || a.no - b.no);
             body.innerHTML = res.map(d => `<tr><td class="text-blue-400 font-bold">${d.class}</td><td>${d.no}</td><td class="text-zinc-200">${d.name}</td><td class="text-green-500 font-bold">${d.score}</td><td class="text-zinc-100 text-[14px] font-bold">${d.difficulty || 'N/A'}</td></tr>`).join('');
         } catch(e) { body.innerHTML = "SYSTEM ERROR"; }
@@ -639,11 +702,11 @@
     }
 
     function startGame() {
-        const randomBg = BGS[Math.floor(Math.random() * BGS.length)];
-        document.getElementById('canvas-holder').style.backgroundImage = `url('${randomBg}')`;
+        randomizeBackground(); // 開始遊戲時也隨機一次
         state.gameActive = true; state.hp = 5; state.score = 0; state.kills = 0; state.bossesDefeated = 0;
         state.enemies = []; state.particles = []; state.combo = 0; state.freezeTimer = 0;
         state.wordPool = []; state.sentencePool = []; state.bossMode = false;
+        state.damageAlpha = 0; // 重置傷害紅光
         document.getElementById('boss-ui').style.opacity = '0';
         requestWakeLock(); handleResize(); initSpeech(); requestAnimationFrame(gameLoop);
         sfx.init();
@@ -753,9 +816,10 @@
 
     function triggerDamage() {
         state.hp--; state.shake = 35; state.combo = 0; sfx.damage();
-        const rect = canvas.parentElement.getBoundingClientRect();
-        ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
-        ctx.fillRect(0, 0, rect.width, rect.height);
+        
+        // 修改：不直接繪製，而是設定 alpha 值，由 gameLoop 統一繪製
+        state.damageAlpha = 0.8; 
+
         if (state.bossMode && state.enemies[0]) state.enemies[0].z = 0.4;
         if (state.hp <= 0) endGame();
     }
@@ -764,40 +828,94 @@
         if (!state.gameActive || state.isPaused) return;
         const rect = canvas.parentElement.getBoundingClientRect();
         const w = rect.width; const h = rect.height;
-        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, w, h); 
-        if (state.shake > 0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake *= 0.88; }
+        
+        // 1. 清除畫布
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        ctx.clearRect(0, 0, w, h); 
+        
+        // 2. 震動效果
+        if (state.shake > 0) { 
+            ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); 
+            state.shake *= 0.88; 
+            if(state.shake < 0.5) state.shake = 0;
+        }
+
         if (state.freezeTimer > 0) state.freezeTimer--;
+        
+        // 3. 繪製背景星星
         ctx.fillStyle = "#222";
         state.bgStars.forEach(s => {
             const sx = w/2 + (s.x * s.z); const sy = h/2 + (s.y * s.z);
             ctx.globalAlpha = 0.4 * s.z; ctx.fillRect(sx, sy, s.s, s.s); ctx.globalAlpha = 1;
             if (state.freezeTimer <= 0) s.z += 0.003; if (s.z > 1) s.z = 0;
         });
+
+        // 4. 生成敵人
         if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > 1800/state.difficulty) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
+
         const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
+        
+        // 5. 更新與繪製敵人 (從遠到近)
+        state.enemies.sort((a,b) => a.z - b.z);
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             const en = state.enemies[i];
+            // 更新邏輯
             if (en.update()) {
                 if (!en.isDying) triggerDamage(); 
                 if (!en.isBoss) state.enemies.splice(i, 1); 
-            } else en.draw(ctx, w, h, en === closest);
+            } else {
+                // 繪製邏輯
+                en.draw(ctx, w, h, en === closest);
+            }
         }
+
+        // 6. 粒子效果
         for (let i = state.particles.length - 1; i >= 0; i--) {
             if (!state.particles[i].update()) state.particles.splice(i, 1); else state.particles[i].draw(ctx);
         }
+
+        // 7. 統一繪製受傷紅光 (解決殘留色塊問題)
+        if (state.damageAlpha > 0.01) {
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // 確保紅光覆蓋全螢幕且不被震動位移
+            ctx.fillStyle = `rgba(255, 0, 0, ${state.damageAlpha * 0.4})`;
+            ctx.fillRect(0, 0, w, h);
+            state.damageAlpha *= 0.9; // 淡出
+        }
+
         updateUIPanel(); requestAnimationFrame(gameLoop);
     }
 
     function updateUIPanel() {
-        document.getElementById('score-display').innerText = Math.floor(state.score).toString().padStart(6, '0');
+        document.getElementById('score-display').innerText = Math.floor(state.score).toString().padStart(5, '0');
         const comboEl = document.getElementById('combo-display');
         comboEl.style.opacity = state.combo > 1 ? '1' : '0'; comboEl.innerText = `${state.combo} COMBO`;
+        
         const status = document.getElementById('status-label');
-        if (state.hp > 3) { status.innerText = 'FINE'; status.className = 'pixel-font text-green-500 text-[11px] font-bold'; }
-        else if (state.hp > 1) { status.innerText = 'CAUTION'; status.className = 'pixel-font text-yellow-500 text-[11px] font-bold'; }
-        else { status.innerText = 'DANGER'; status.className = 'pixel-font text-red-600 text-[11px] font-bold'; }
+        const ecgPath = document.getElementById('ecg-path');
+        const ecgLine = document.querySelector('.ecg-line');
+        
+        // 更新 ECG 與狀態文字顏色
+        if (state.hp > 3) { 
+            status.innerText = 'VITAL: STABLE'; 
+            status.className = 'pixel-font text-green-500 text-[8px] font-bold'; 
+            ecgPath.setAttribute('stroke', 'lime');
+            ecgLine.style.animationDuration = "2s";
+        }
+        else if (state.hp > 1) { 
+            status.innerText = 'VITAL: CAUTION'; 
+            status.className = 'pixel-font text-yellow-500 text-[8px] font-bold'; 
+            ecgPath.setAttribute('stroke', 'yellow');
+            ecgLine.style.animationDuration = "1s"; // 心跳變快
+        }
+        else { 
+            status.innerText = 'VITAL: CRITICAL'; 
+            status.className = 'pixel-font text-red-600 text-[8px] font-bold flicker'; 
+            ecgPath.setAttribute('stroke', 'red');
+            ecgLine.style.animationDuration = "0.5s"; // 心跳急促
+        }
+
         const target = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
         let t = "AWAITING...";
         if (state.bossMode) t = `BOSS STAGE (${state.bossesDefeated+1})`;
