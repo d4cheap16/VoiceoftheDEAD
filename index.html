@@ -66,7 +66,7 @@
             padding: 10px; cursor: pointer; font-size: 9px;
             font-family: 'Press Start 2P', cursive;
             transition: 0.1s; border-radius: 4px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .btn:active { background: #555; color: #fff; transform: scale(0.95); }
 
@@ -101,7 +101,13 @@
         }
         .banner-box img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
 
-        .active-diff { border-color: #fff !important; background: #222 !important; color: #fff !important; }
+        /* 難度顏色提示樣式 */
+        .diff-rookie.active-diff { background: #063d19 !important; border-color: #0f0 !important; color: #0f0 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); }
+        .diff-veteran.active-diff { background: #002244 !important; border-color: #0af !important; color: #0af !important; box-shadow: 0 0 10px rgba(0, 170, 255, 0.2); }
+        .diff-nightmare.active-diff { background: #330044 !important; border-color: #f0f !important; color: #f0f !important; box-shadow: 0 0 10px rgba(255, 0, 255, 0.2); }
+        .diff-nohope.active-diff { background: #330000 !important; border-color: #f00 !important; color: #f00 !important; box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
+
+        .diff-btn .zh-hint { font-size: 7px; margin-top: 4px; font-family: 'Noto Sans TC'; opacity: 0.8; }
         
         #boss-ui {
             position: absolute; top: 15px; left: 0; width: 100%;
@@ -179,10 +185,18 @@
             <input type="number" id="input-no" placeholder="NUMBER" class="input-retro">
             <input type="text" id="input-name" placeholder="NAME" class="input-retro">
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn" id="diff-rookie">Rookie</button>
-                <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn active-diff" id="diff-veteran">Veteran</button>
-                <button onclick="setDifficulty(1.5, 'Nightmare')" class="btn diff-btn" id="diff-nightmare">Nightmare</button>
-                <button onclick="setDifficulty(2.5, 'NoHope')" class="btn diff-btn text-red-600" id="diff-nohope">NO HOPE</button>
+                <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn diff-rookie" id="diff-rookie">
+                    Rookie <span class="zh-hint">簡單</span>
+                </button>
+                <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn diff-veteran active-diff" id="diff-veteran">
+                    Veteran <span class="zh-hint">普通</span>
+                </button>
+                <button onclick="setDifficulty(1.5, 'Nightmare')" class="btn diff-btn diff-nightmare" id="diff-nightmare">
+                    Nightmare <span class="zh-hint">困難</span>
+                </button>
+                <button onclick="setDifficulty(2.5, 'NoHope')" class="btn diff-btn diff-nohope text-red-600" id="diff-nohope">
+                    NO HOPE <span class="zh-hint">絕望</span>
+                </button>
             </div>
             <div class="flex gap-2">
                 <button onclick="backToMission()" class="btn w-1/3 text-[8px] uppercase">Back</button>
@@ -537,22 +551,20 @@
         }
         draw(ctx, w, h, isClosest) {
             const scale = this.isBoss ? 2.5 : 1.0;
-            // 強制限制繪圖尺寸，防止撐爆螢幕
             const size = Math.min(w * 0.6, (15 + Math.pow(this.z, 2) * 280) * scale);
             const wobbleX = Math.sin(Date.now() * 0.004 + this.wobbleSeed) * 10 * this.z;
             const screenX = w/2 + (this.x * this.z) + wobbleX;
             const screenY = h/2 + (this.y * this.z) + (this.z * h * 0.4);
             ctx.save(); ctx.globalAlpha = this.opacity; ctx.translate(screenX, screenY);
             
-            // Minecraft 殭屍
             ctx.fillStyle = `hsl(${this.clothesHue}, 40%, 35%)`;
-            ctx.fillRect(-size/3, -size/2.5, size/1.5, size/1.2); // 身體
+            ctx.fillRect(-size/3, -size/2.5, size/1.5, size/1.2); 
             ctx.fillStyle = `hsl(210, 30%, 20%)`;
-            ctx.fillRect(-size/3, size/4, size/1.5, size/4); // 褲子
+            ctx.fillRect(-size/3, size/4, size/1.5, size/4); 
             ctx.fillStyle = `hsl(${this.skinHue}, 45%, 50%)`;
-            ctx.fillRect(-size/3.5, -size*0.9, size/1.75, size/2.2); // 頭
-            ctx.fillRect(-size/2, -size/3, size/6, size/3); // 手1
-            ctx.fillRect(size/3, -size/3, size/6, size/3); // 手2
+            ctx.fillRect(-size/3.5, -size*0.9, size/1.75, size/2.2); 
+            ctx.fillRect(-size/2, -size/3, size/6, size/3); 
+            ctx.fillRect(size/3, -size/3, size/6, size/3); 
             ctx.fillStyle = "#000"; 
             const eyeS = size/10;
             ctx.fillRect(-size/6, -size*0.75, eyeS, eyeS);
@@ -718,7 +730,7 @@
         if (!state.gameActive || state.isPaused) return;
         const rect = canvas.parentElement.getBoundingClientRect();
         const w = rect.width; const h = rect.height;
-        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h); // 每一幀重畫背景，防止殘影
+        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h); 
         
         if (state.shake > 0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake *= 0.88; }
         if (state.freezeTimer > 0) state.freezeTimer--;
