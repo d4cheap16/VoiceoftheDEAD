@@ -168,7 +168,7 @@
         }
         #records-body tr:nth-child(even) { background: #0a0a0a; }
         #records-body td, #records-body th { padding: 12px 8px; border-bottom: 1px solid #1a1a1a; }
-        #records-body th { color: #555; font-size: 12px; text-transform: uppercase; }
+        #records-body th { color: #555; font-size: 12px; text-transform: uppercase; text-align: left;}
 
         .active-diff { border-color: #fff !important; background: #222 !important; color: #fff !important; }
 
@@ -207,14 +207,14 @@
     <!-- 1. 任務選擇畫面 -->
     <div id="mission-screen" class="overlay-screen">
         <div class="banner-box">
-            <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="" onerror="this.style.display='none'">
+            <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Banner" onerror="this.style.display='none'">
         </div>
 
         <h1 class="pixel-font text-md mb-4 flicker" style="color:#ccc">SELECT SECTOR</h1>
         
         <div class="bg-black p-4 border border-zinc-800 w-full max-w-sm flex flex-col items-center">
             <div class="w-full mb-4">
-                <p class="text-[7px] text-zinc-600 mb-2 pixel-font">DATA VOLUME</p>
+                <p class="text-[7px] text-zinc-600 mb-2 pixel-font uppercase">Data Volume</p>
                 <div class="grid grid-cols-5 gap-1">
                     <button onclick="selectBook(1)" class="btn book-btn" id="b1">I</button>
                     <button onclick="selectBook(2)" class="btn book-btn" id="b2">II</button>
@@ -225,7 +225,7 @@
             </div>
 
             <div class="w-full mb-4">
-                <p class="text-[7px] text-zinc-600 mb-2 pixel-font">SECTOR UNIT</p>
+                <p class="text-[7px] text-zinc-600 mb-2 pixel-font uppercase">Sector Unit</p>
                 <div class="grid grid-cols-3 gap-1">
                     <button onclick="selectLesson(1)" class="btn lesson-btn active-diff" id="l1">1</button>
                     <button onclick="selectLesson(2)" class="btn lesson-btn" id="l2">2</button>
@@ -246,6 +246,9 @@
 
     <!-- 2. 登錄畫面 -->
     <div id="login-screen" class="overlay-screen hidden">
+        <div class="banner-box">
+            <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Banner" onerror="this.style.display='none'">
+        </div>
         <h1 class="pixel-font text-sm mb-4 text-blue-500 uppercase" id="selected-mission-title">MISSION ID</h1>
         <div class="flex flex-col items-center bg-black p-4 border border-zinc-800 w-full max-w-sm">
             <p class="text-[7px] text-zinc-600 mb-4 pixel-font uppercase">Member Registration</p>
@@ -312,11 +315,11 @@
             <table class="w-full text-left">
                 <thead class="bg-zinc-900 sticky top-0">
                     <tr>
-                        <th>Class</th>
-                        <th>No</th>
-                        <th>Name</th>
-                        <th>Score</th>
-                        <th>Diff</th>
+                        <th class="p-3">Class</th>
+                        <th class="p-3">No</th>
+                        <th class="p-3">Name</th>
+                        <th class="p-3">Score</th>
+                        <th class="p-3">Diff</th>
                     </tr>
                 </thead>
                 <tbody id="records-body">
@@ -579,6 +582,18 @@
         }
     }
 
+    function setDifficulty(val, name) {
+        state.difficultyMultiplier = val;
+        state.difficultyName = name;
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active-diff'));
+        
+        // 確保 ID 匹配
+        if (val === 0.7) document.getElementById('diff-rookie').classList.add('active-diff');
+        if (val === 1.0) document.getElementById('diff-veteran').classList.add('active-diff');
+        if (val === 1.5) document.getElementById('diff-nightmare').classList.add('active-diff');
+        if (val === 2.5) document.getElementById('diff-nohope').classList.add('active-diff');
+    }
+
     function spawnLogic() {
         if (!state.gameActive || state.isPaused) return;
         const interval = 1500 / state.difficultyMultiplier;
@@ -704,7 +719,7 @@
                     `);
                 });
             }
-        } catch (e) { body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-red-700'>CRITICAL ERROR: CONNECTION REFUSED</td></tr>"; }
+        } catch (e) { body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-red-700 font-bold'>CRITICAL ERROR: CONNECTION REFUSED</td></tr>"; }
     }
 
     function startGame() {
