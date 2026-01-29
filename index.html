@@ -8,7 +8,7 @@
     <title>Voice of the Dead</title>
     <meta name="description" content="Want to Survive? Speak!">
     <meta property="og:title" content="Speak your way out.">
-    <meta property="og:description" content="用聲音在末日中生存。。">
+    <meta property="og:description" content="用聲音在末日中生存。">
     <meta property="og:image" content="https://d4cheap16.github.io/VoiceoftheDEAD/opentag.png">
     <meta property="og:type" content="website">
 
@@ -196,11 +196,14 @@
             display: none; /* 預設隱藏 */
         }
 
-        /* Debug Panel 樣式 */
+        /* Debug Panel 樣式 (靠右對齊，避免遮擋) */
         #debug-panel {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); pointer-events: none; z-index: 300;
-            display: flex; flex-direction: column; justify-content: flex-start; padding: 10px;
+            position: absolute; top: 0; right: 0; width: 100%; height: 100%;
+            background: transparent; pointer-events: none; z-index: 300;
+            display: flex; flex-direction: column; 
+            align-items: flex-end; /* 靠右對齊 */
+            justify-content: flex-start; 
+            padding: 10px;
         }
         .debug-controls {
             pointer-events: auto;
@@ -209,6 +212,7 @@
             padding: 10px;
             border-radius: 8px;
             max-width: 200px;
+            margin-top: 40px;
             font-size: 8px;
             color: #0f0;
         }
@@ -347,8 +351,8 @@
             <button onclick="debugCritical()" class="debug-btn text-purple-400 border-purple-500">4. Trigger Critical (Wipe)</button>
             <button onclick="startBossBattle()" class="debug-btn text-red-400 border-red-500">5. Spawn BOSS</button>
             
-            <!-- 新增：強制重整按鈕 -->
-            <button onclick="location.reload()" class="debug-btn bg-red-900 border-red-500 text-white mt-4 font-bold text-center hover:bg-red-700">EXIT TEST (RELOAD)</button>
+            <!-- 文字改回 EXIT TEST (RELOAD)，功能仍是重整 -->
+            <button onclick="exitDebugMode()" class="debug-btn bg-red-900 border-red-500 text-white mt-4 font-bold text-center hover:bg-red-700">EXIT TEST (RELOAD)</button>
 
             <div class="mt-2 text-[7px] text-zinc-400">PARAMETERS:</div>
             <div id="debug-params" class="debug-info"></div>
@@ -503,7 +507,10 @@
             boxShadow: "0 0 25px rgba(103, 232, 249, 0.6)",
             overlayColor: "white",
             overlayDuration: 1500, 
-            effect: (state) => { state.freezeTimer = 180; } 
+            effect: (state) => { 
+                state.freezeTimer = 180; 
+                state.shake = 50; // 新增：閃光彈震動
+            } 
         },
         'SHOTGUN': {
             text: "SHOTGUN!",
@@ -518,13 +525,16 @@
             }
         },
         'CRITICAL': {
-            text: "WITNESS THE POWER!",
+            text: "OVERKILL!!!",
             textColor: "#d946ef", 
             borderColor: "#d946ef",
             boxShadow: "0 0 40px rgba(217, 70, 239, 0.9)",
             overlayColor: "rgba(217, 70, 239, 0.6)", 
             overlayDuration: 800,
-            effect: (state) => { state.hp = 5; } 
+            effect: (state) => { 
+                state.hp = 5; 
+                state.shake = 70; // 增加強烈震動效果
+            } 
         }
     };
 
@@ -767,6 +777,12 @@
         paramDiv.innerText = `REWARD_CONFIG = ${JSON.stringify(REWARD_CONFIG, null, 2)}\n\nBOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}`;
         
         startGame();
+    };
+
+    // 新增：退出 Debug 模式 (強制重整)
+    window.exitDebugMode = () => {
+        document.getElementById('debug-panel').classList.add('hidden');
+        location.reload();
     };
 
     // 新增：觸發獎勵的通用函式 (內部使用)
@@ -1254,7 +1270,6 @@
         } catch(e){}
     }
 
-    // 輔助函式：更新結果面板
     function updateResultDetails(elId) {
         const el = document.getElementById(elId);
         if(!el) return;
