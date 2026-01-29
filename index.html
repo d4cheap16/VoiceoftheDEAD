@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voice Word Shooter - JSON Loader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --horror-red: #8b0000;
+            --horror-green: #1a3300;
+        }
+
+        body {
+            background-color: #050505;
+            color: #ccc;
+            font-family: 'Noto Sans TC', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .pixel-font { font-family: 'Press Start 2P', cursive; }
+
+        /* CRT 掃描線特效 */
+        .crt::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 100;
+            background-size: 100% 3px, 2px 100%;
+            pointer-events: none;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.98; }
+            5% { opacity: 0.95; }
+            100% { opacity: 1; }
+        }
+        .flicker { animation: flicker 0.15s infinite; }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-4px, 4px); }
+            50% { transform: translate(4px, -4px); }
+            75% { transform: translate(-4px, -4px); }
+        }
+        .shake { animation: shake 0.3s; }
+
+        .game-container {
+            position: relative;
+            width: 100dvw;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 80%);
+        }
+
+        #game-canvas {
+            image-rendering: pixelated;
+            background: #000;
+            width: 100%;
+            height: auto;
+            max-height: 65vh;
+            border-bottom: 2px solid var(--horror-red);
+        }
+
+        .ui-panel {
+            flex-grow: 1;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 2px solid var(--horror-red);
+            padding: 10px 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .btn {
+            background: #1a1a1a;
+            border: 2px solid #444;
+            color: #fff;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .btn:active { background: var(--horror-red); border-color: #f00; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #333; }
+
+        select, input {
+            background: #111;
+            border: 2px solid #444;
+            color: #0f0;
+            padding: 12px;
+            font-size: 14px;
+            margin: 4px;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .overlay-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .diff-btn {
+            flex: 1;
+            font-size: 7px !important;
+            padding: 10px 4px !important;
+            line-height: 1.4;
+        }
+
+        .active-diff { border-color: #ff0000 !important; background: #400 !important; }
+
+        .mission-selector { width: 100%; max-width: 400px; margin-bottom: 20px; }
+        .mission-label { font-size: 10px; color: #888; margin-bottom: 5px; text-align: left; width: 100%; }
+    </style>
+</head>
+<body class="crt">
+
+<div class="game-container" id="main-container">
+    
+    <!-- 1. 任務選擇畫面 -->
+    <div id="mission-screen" class="overlay-screen">
+        <h1 class="pixel-font text-2xl md:text-3xl mb-8 flicker" style="color:#8b0000">SELECT MISSION</h1>
+        
+        <div class="bg-zinc-900 p-6 border-2 border-zinc-700 w-full max-w-sm flex flex-col items-center">
+            
+            <div class="mission-selector">
+                <p class="mission-label pixel-font">VOLUME (BOOK)</p>
+                <!-- 預設選擇 Book 2 -->
+                <div class="grid grid-cols-5 gap-1 mb-4">
+                    <button onclick="selectBook(1)" class="btn pixel-font book-btn" id="b1">I</button>
+                    <button onclick="selectBook(2)" class="btn pixel-font book-btn active-diff" id="b2">II</button>
+                    <button onclick="selectBook(3)" class="btn pixel-font book-btn" id="b3">III</button>
+                    <button onclick="selectBook(4)" class="btn pixel-font book-btn" id="b4">IV</button>
+                    <button onclick="selectBook(5)" class="btn pixel-font book-btn" id="b5">V</button>
+                </div>
+
+                <p class="mission-label pixel-font">SECTOR (UNIT)</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="selectLesson(1)" class="btn pixel-font lesson-btn" id="l1">1</button>
+                    <button onclick="selectLesson(2)" class="btn pixel-font lesson-btn active-diff" id="l2">2</button>
+                    <button onclick="selectLesson(3)" class="btn pixel-font lesson-btn" id="l3">3</button>
+                    <button onclick="selectLesson(4)" class="btn pixel-font lesson-btn" id="l4">4</button>
+                    <button onclick="selectLesson(5)" class="btn pixel-font lesson-btn" id="l5">5</button>
+                    <button onclick="selectLesson(6)" class="btn pixel-font lesson-btn" id="l6">6</button>
+                    <button onclick="selectLesson(7)" class="btn pixel-font lesson-btn" id="l7">7</button>
+                    <button onclick="selectLesson(8)" class="btn pixel-font lesson-btn" id="l8">8</button>
+                    <button onclick="selectLesson(9)" class="btn pixel-font lesson-btn" id="l9">9</button>
+                </div>
+            </div>
+
+            <div id="mission-status" class="text-xs pixel-font text-yellow-500 mb-4 h-6">INITIALIZING...</div>
+
+            <button onclick="confirmMission()" id="confirm-mission-btn" class="btn w-full py-4 pixel-font !text-[12px] bg-zinc-800" disabled>WAITING FOR DATA</button>
+        </div>
+    </div>
+
+    <!-- 2. 士兵登錄畫面 -->
+    <div id="login-screen" class="overlay-screen hidden">
+        <h1 class="pixel-font text-2xl mb-4 flicker" style="color:#8b0000" id="selected-mission-title">MISSION UNKNOWN</h1>
+        <div class="flex flex-col items-center bg-zinc-900 p-5 border-2 border-zinc-700 shadow-2xl w-full max-w-sm">
+            <p class="text-[10px] text-zinc-500 mb-4 pixel-font">SOLDIER REGISTRATION</p>
+            
+            <div class="flex gap-2 w-full mb-2">
+                <select id="select-grade">
+                    <option value="高一">高一</option>
+                    <option value="高二">高二</option>
+                    <option value="高三">高三</option>
+                </select>
+                <select id="select-class">
+                    <option value="知足">知足</option>
+                    <option value="感恩">感恩</option>
+                    <option value="善解">善解</option>
+                    <option value="包容">包容</option>
+                    <option value="大愛">大愛</option>
+                    <option value="外校">外校</option>
+                </select>
+            </div>
+            
+            <input type="number" id="input-no" placeholder="座號 (01-50)" pattern="\d*">
+            <input type="text" id="input-name" placeholder="姓名 (或管理員代碼)">
+            
+            <div class="mt-4 w-full">
+                <p class="text-[10px] text-zinc-400 mb-3 pixel-font">DIFFICULTY</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setDifficulty(0.7, 'Rookie (*)')" class="btn diff-btn pixel-font" id="diff-rookie">Rookie<br>(*)</button>
+                    <button onclick="setDifficulty(1.0, 'Veteran (**)')" class="btn diff-btn active-diff pixel-font" id="diff-veteran">Veteran<br>(**)</button>
+                    <button onclick="setDifficulty(1.4, 'Nightmare (***)')" class="btn diff-btn pixel-font" id="diff-nightmare">Nightmare<br>(***)</button>
+                    <button onclick="setDifficulty(2.2, 'NO HOPE (*****)')" class="btn diff-btn text-red-500 pixel-font" id="diff-nohope">NO HOPE<br>(*****)</button>
+                </div>
+            </div>
+
+            <div class="flex gap-2 w-full mt-6">
+                 <button onclick="backToMissionSelect()" class="btn w-1/3 py-4 pixel-font !text-[10px] bg-zinc-800">BACK</button>
+                 <button id="start-btn" onclick="handleAuth()" class="btn w-2/3 py-4 pixel-font !text-[12px] bg-red-900 border-red-500">START</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ALL CLEAR 畫面 -->
+    <div id="win-screen" class="overlay-screen hidden">
+        <h1 class="text-green-500 pixel-font text-4xl mb-4 flicker">ALL CLEAR</h1>
+        <p class="text-white text-lg mb-6">任務達成 (MISSION ACCOMPLISHED)</p>
+        <div class="bg-zinc-900 border-2 border-green-700 p-6 mb-8 w-full max-w-xs">
+            <p id="win-score" class="pixel-font text-xl text-yellow-500 mb-2">SCORE: 0</p>
+            <p class="text-[14px] font-bold">該區域威脅已清除。</p>
+        </div>
+        <button onclick="location.reload()" class="btn w-full max-w-xs py-4 pixel-font">返回基地 (EXIT)</button>
+    </div>
+
+    <!-- Admin Screen -->
+    <div id="admin-screen" class="overlay-screen hidden">
+        <h2 class="pixel-font text-red-600 mb-4">數據中心</h2>
+        <div class="w-full max-w-md bg-black border-2 border-zinc-800 overflow-x-auto">
+            <table class="w-full text-[12px] text-left">
+                <thead class="border-b border-zinc-700 text-red-500 font-bold">
+                    <tr><th class="p-2">班級</th><th class="p-2">座號</th><th class="p-2">姓名</th><th class="p-2">分數</th></tr>
+                </thead>
+                <tbody id="records-body"></tbody>
+            </table>
+        </div>
+        <button onclick="location.reload()" class="btn mt-6 py-3 px-8 pixel-font">關閉</button>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pause-screen" class="overlay-screen hidden" style="background: rgba(0,0,0,0.95);">
+        <h2 class="pixel-font text-red-600 text-2xl mb-4">暫停中</h2>
+        <div id="target-word-hint" class="text-xl text-white font-bold mb-10 border-y border-zinc-700 py-6 w-full px-4 text-center">WORD</div>
+        <div class="flex flex-col gap-4 w-full max-w-xs px-4">
+            <button onclick="speakTarget()" class="btn bg-blue-900 py-4 pixel-font">聽發音 (LISTEN)</button>
+            <button onclick="resumeGame()" class="btn bg-green-900 py-4 pixel-font">繼續 (RESUME)</button>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="overlay-screen hidden">
+        <h2 class="pixel-font text-red-600 text-4xl mb-6 flicker">你死了</h2>
+        <p id="final-score-display" class="pixel-font text-lg mb-8"></p>
+        <button onclick="location.reload()" class="btn w-full max-w-xs py-4 pixel-font">重新嘗試 (RETRY)</button>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <div class="ui-panel">
+        <div class="flex flex-col gap-1">
+            <div id="hp-display" class="text-lg">❤️❤️❤️❤️❤️</div>
+            <div id="score-display" class="text-[10px] text-zinc-500 pixel-font">000000</div>
+        </div>
+        <div class="flex flex-col items-center">
+            <div id="level-progress-ui" class="text-[10px] text-zinc-500 mb-1 pixel-font">STAGE 1: 0/10</div>
+            <div id="current-word-ui" class="text-sm md:text-lg text-white font-bold text-center leading-tight">---</div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+            <div id="difficulty-ui" class="text-[8px] text-green-600 pixel-font">ROOKIE (*)</div>
+            <button onclick="togglePause()" class="btn !p-2 text-[10px] w-full pixel-font">暫停</button>
+        </div>
+    </div>
+
+    <div id="blood-splatter" class="fixed inset-0 pointer-events-none bg-red-900/20 opacity-0 transition-opacity duration-300 z-[150]"></div>
+</div>
+
+<script type="module">
+    // Firebase Libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDocs, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- Firebase 設定 (已從您的截圖中提取) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBKiz17S_mjAEcat-oT0EDVnvKxhTzxQe8",
+        authDomain: "voiceofthedead.firebaseapp.com",
+        projectId: "voiceofthedead",
+        storageBucket: "voiceofthedead.firebasestorage.app",
+        messagingSenderId: "757378314086",
+        appId: "1:757378314086:web:aa598f79e28e3cb6a122a7"
+    };
+
+    // 初始化 Firebase
+    let app, auth, db;
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        window.fbase = { db, auth, setDoc, doc, collection, serverTimestamp, getDocs };
+        
+        // 匿名登入
+        signInAnonymously(auth).then(() => {
+            console.log("Firebase Anonymous Auth Success");
+        }).catch((error) => {
+            console.error("Auth Failed:", error);
+        });
+
+        onAuthStateChanged(auth, (u) => { window.currentUser = u; });
+        console.log("Firebase initialized");
+    } catch (e) {
+        console.error("Firebase init failed:", e);
+    }
+    
+    // 全域 App ID
+    window.appId = 'voice-shooter-101';
+</script>
+
+<script>
+    const ADMIN_CODE = "teacher999";
+    
+    // 選單邏輯
+    let selectedBook = 2; // 預設 Book 2
+    let selectedLesson = 2; // 預設 Lesson 2
+    let currentBookData = {}; // 儲存當前載入的整本書資料
+    let currentLessonData = null; // 儲存當前選擇的課程資料
+
+    async function loadBookData(bookNum) {
+        const statusEl = document.getElementById('mission-status');
+        const btn = document.getElementById('confirm-mission-btn');
+        
+        statusEl.innerText = `CONNECTING TO BOOK ${bookNum}...`;
+        statusEl.style.color = "#ffff00"; // Yellow
+        btn.disabled = true;
+
+        try {
+            // 動態載入 JSON (注意：需在伺服器環境下執行)
+            const response = await fetch(`book${bookNum}.json`);
+            if (!response.ok) throw new Error("File not found");
+            
+            currentBookData = await response.json();
+            statusEl.innerText = `BOOK ${bookNum} LOADED`;
+            statusEl.style.color = "#00ff00"; // Green
+            
+            // 載入成功後，重新檢查目前選擇的 Lesson 是否有效
+            checkDataAvailability();
+            
+        } catch (error) {
+            console.error(error);
+            currentBookData = {}; // 清空資料
+            statusEl.innerText = `BOOK ${bookNum} NOT FOUND (OFFLINE)`;
+            statusEl.style.color = "#ff0000"; // Red
+            checkDataAvailability();
+        }
+    }
+
+    function selectBook(n) {
+        selectedBook = n;
+        document.querySelectorAll('.book-btn').forEach(b => b.classList.remove('active-diff'));
+        document.getElementById(`b${n}`).classList.add('active-diff');
+        // 切換書本時，去抓取新的 JSON
+        loadBookData(n);
+    }
+
+    function selectLesson(n) {
+        selectedLesson = n;
+        document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active-diff'));
+        document.getElementById(`l${n}`).classList.add('active-diff');
+        checkDataAvailability();
+    }
+
+    function checkDataAvailability() {
+        const key = `L${selectedLesson}`;
+        const statusEl = document.getElementById('mission-status');
+        const btn = document.getElementById('confirm-mission-btn');
+        
+        // 檢查 currentBookData 是否有該 L{n} 的資料
+        if (currentBookData && currentBookData[key] && currentBookData[key].stages) {
+            statusEl.innerText = `TARGET: ${currentBookData[key].title}`;
+            statusEl.style.color = "#00ff00"; // Green
+            btn.disabled = false;
+            btn.innerText = "CONFIRM TARGET";
+        } else {
+            if (Object.keys(currentBookData).length > 0) {
+                statusEl.innerText = "SECTOR LOCKED / NO DATA";
+                statusEl.style.color = "#888"; // Gray
+            }
+            btn.disabled = true;
+            btn.innerText = "ACCESS DENIED";
+        }
+    }
+
+    // 初始化：載入預設的 Book 2
+    loadBookData(2);
+
+    function confirmMission() {
+        const key = `L${selectedLesson}`;
+        currentLessonData = currentBookData[key];
+        
+        // 切換到登錄畫面
+        document.getElementById('mission-screen').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('selected-mission-title').innerText = currentLessonData.title;
+    }
+
+    function backToMissionSelect() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('mission-screen').classList.remove('hidden');
+    }
+
+    // --- 遊戲核心邏輯 ---
+
+    const LEVEL_GOALS = { 1: 10, 2: 5 }; 
+    const COLORS = {
+        skin: ['#567d46', '#3d5c31'],
+        shirt: ['#3c44aa', '#8b0000', '#4a4a4a'],
+        pants: ['#2e2e2e', '#1a1a1a'],
+        eliteSkin: '#4a008b',
+        eliteShirt: '#ffd700'
+    };
+
+    let state = {
+        score: 0, hp: 5, level: 1, combo: 0, levelKills: 0, 
+        difficultyMultiplier: 1.0, difficultyName: "Rookie (*)",
+        isPaused: false, gameActive: false,
+        enemies: [], player: { class: "", no: "", name: "" },
+        spawnTimer: 0, maxEnemies: 3, isFirstSpawn: true
+    };
+
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    const bloodOverlay = document.getElementById('blood-splatter');
+    const mainContainer = document.getElementById('main-container');
+
+    function handleResize() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+            if (state.isPaused || !state.gameActive) return;
+            let transcript = "";
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript.toUpperCase();
+            }
+            state.enemies.forEach((enemy, index) => {
+                if (!enemy.isDying) {
+                    const cleanWord = enemy.word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+                    const cleanTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+                    if (cleanTranscript.includes(cleanWord)) killEnemy(index);
+                }
+            });
+        };
+        recognition.onend = () => { if (state.gameActive && !state.isPaused) try { recognition.start(); } catch(e) {} };
+    }
+
+    class Enemy {
+        constructor(word, lv, isElite = false, forceClose = false) {
+            this.word = word;
+            this.z = forceClose ? 0.6 : 0; 
+            const stageFactor = state.level === 2 ? 0.7 : 1.0; 
+            this.speed = (0.0006 + (Math.random() * 0.0004)) * state.difficultyMultiplier * (isElite ? 0.8 : 1) * stageFactor;
+            this.x = (Math.random() - 0.5) * 350;
+            this.y = (Math.random() - 0.5) * 40;
+            this.isDying = false;
+            this.opacity = 0;
+            this.isElite = isElite;
+            this.cSkin = isElite ? COLORS.eliteSkin : COLORS.skin[Math.floor(Math.random() * COLORS.skin.length)];
+            this.cShirt = isElite ? COLORS.eliteShirt : COLORS.shirt[Math.floor(Math.random() * COLORS.shirt.length)];
+            this.cPants = COLORS.pants[Math.floor(Math.random() * COLORS.pants.length)];
+        }
+
+        update() {
+            if (this.isDying) return (this.opacity -= 0.15) <= 0;
+            this.z += this.speed;
+            if (this.opacity < 1) this.opacity += 0.1;
+            return this.z >= 1;
+        }
+
+        draw() {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+            
+            const baseSize = this.isElite ? 25 : 18;
+            const growth = this.isElite ? 220 : 160;
+            const size = baseSize + (Math.pow(this.z, 1.6) * growth);
+            const xPos = w / 2 + (this.x * this.z);
+            const yPos = h / 2 + (this.y * this.z) + (this.z * 100);
+            
+            ctx.save();
+            ctx.globalAlpha = this.opacity;
+            const br = 0.2 + (this.z * 0.8);
+            ctx.filter = `brightness(${br})`;
+            
+            ctx.fillStyle = this.cSkin;
+            ctx.fillRect(xPos - size/4, yPos - size*1.2, size/2, size/2); 
+            ctx.fillStyle = this.cShirt;
+            ctx.fillRect(xPos - size/4, yPos - size*0.7, size/2, size/2); 
+            ctx.fillStyle = this.cSkin;
+            ctx.fillRect(xPos - size/2, yPos - size*0.7, size/4, size/8); 
+            ctx.fillRect(xPos + size/4, yPos - size*0.7, size/4, size/8); 
+            ctx.fillStyle = this.cPants;
+            ctx.fillRect(xPos - size/4, yPos - size*0.2, size/5, size/4); 
+            ctx.fillRect(xPos + size/20, yPos - size*0.2, size/5, size/4); 
+            
+            if (this.isElite) {
+                ctx.strokeStyle = '#ffd700';
+                ctx.setLineDash([2, 2]);
+                ctx.strokeRect(xPos - size/2, yPos - size*1.3, size, size*1.5);
+            }
+
+            const isSentence = this.word.includes(" ");
+            const fontSize = isSentence ? Math.max(9, size/9) : Math.max(11, size/7);
+            
+            ctx.fillStyle = this.isElite ? '#ffd700' : '#fff';
+            ctx.font = `bold ${fontSize}px 'Noto Sans TC'`;
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 8; ctx.shadowColor = this.isElite ? 'gold' : 'red';
+            
+            if (this.word.length > 25) {
+                 const words = this.word.split(" ");
+                 const mid = Math.floor(words.length / 2);
+                 const line1 = words.slice(0, mid).join(" ");
+                 const line2 = words.slice(mid).join(" ");
+                 ctx.fillText(line1, xPos, yPos - size*1.6);
+                 ctx.fillText(line2, xPos, yPos - size*1.4);
+            } else {
+                 ctx.fillText(this.word, xPos, yPos - size*1.4);
+            }
+            ctx.restore();
+        }
+    }
+
+    function setDifficulty(val, name) {
+        state.difficultyMultiplier = val;
+        state.difficultyName = name;
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active-diff'));
+        if (val === 0.7) document.getElementById('diff-rookie').classList.add('active-diff');
+        if (val === 1.0) document.getElementById('diff-veteran').classList.add('active-diff');
+        if (val === 1.4) document.getElementById('diff-nightmare').classList.add('active-diff');
+        if (val === 2.2) document.getElementById('diff-nohope').classList.add('active-diff');
+    }
+
+    function spawnLogic() {
+        if (!state.gameActive || state.isPaused) return;
+        state.maxEnemies = state.level === 1 ? 3 : 2; 
+        
+        if ((state.isFirstSpawn && state.enemies.length === 0) || (state.enemies.length < state.maxEnemies && Date.now() - state.spawnTimer > 2000 / state.difficultyMultiplier)) {
+            if (!currentLessonData || !currentLessonData.stages) return;
+            const list = currentLessonData.stages[state.level.toString()];
+            if (!list) return;
+
+            const word = list[Math.floor(Math.random() * list.length)];
+            
+            if (!state.enemies.some(e => e.word === word)) {
+                const eliteChance = state.difficultyMultiplier > 2 ? 0.3 : 0.12;
+                const isElite = Math.random() < (eliteChance * state.difficultyMultiplier);
+                state.enemies.push(new Enemy(word, state.level, isElite, state.isFirstSpawn));
+                state.spawnTimer = Date.now();
+                state.isFirstSpawn = false;
+            }
+        }
+    }
+
+    function killEnemy(idx) {
+        if (!state.enemies[idx]) return;
+        state.enemies[idx].isDying = true;
+        state.score += (state.enemies[idx].isElite ? 500 : 100) * state.level;
+        state.levelKills++;
+        document.getElementById('current-word-ui').innerText = state.enemies[idx].word;
+        
+        const goal = LEVEL_GOALS[state.level];
+        if (state.levelKills >= goal) {
+            if (state.level < 2) { 
+                state.level++; 
+                state.levelKills = 0; 
+                state.enemies = []; 
+            } else { 
+                winGame(); 
+            }
+        }
+        updateUI();
+    }
+
+    function triggerDamage() {
+        state.hp--; bloodOverlay.style.opacity = "1";
+        mainContainer.classList.add('shake');
+        setTimeout(() => { bloodOverlay.style.opacity = "0"; mainContainer.classList.remove('shake'); }, 300);
+        updateUI(); if (state.hp <= 0) endGame();
+    }
+
+    function updateUI() {
+        document.getElementById('hp-display').innerText = '❤️'.repeat(Math.max(0, state.hp));
+        document.getElementById('score-display').innerText = state.score.toString().padStart(6, '0');
+        const goal = LEVEL_GOALS[state.level];
+        const stageName = state.level === 1 ? "STAGE 1" : "STAGE 2";
+        document.getElementById('level-progress-ui').innerText = `${stageName}: ${state.levelKills}/${goal}`;
+    }
+
+    function gameLoop() {
+        if (!state.gameActive || state.isPaused) return;
+        const w = canvas.width / (window.devicePixelRatio || 1);
+        const h = canvas.height / (window.devicePixelRatio || 1);
+        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
+        
+        ctx.strokeStyle = '#111'; ctx.lineWidth = 1; ctx.beginPath();
+        for(let i=0; i<10; i++) {
+            ctx.moveTo(w/2, h/2); ctx.lineTo(i * (w/9), h);
+            ctx.moveTo(w/2, h/2); ctx.lineTo(i * (w/9), 0);
+        }
+        ctx.stroke();
+
+        spawnLogic();
+        state.enemies.sort((a, b) => a.z - b.z);
+        for (let i = state.enemies.length - 1; i >= 0; i--) {
+            const enemy = state.enemies[i];
+            if (enemy.update()) {
+                if (!enemy.isDying) { state.enemies.splice(i, 1); triggerDamage(); }
+                else { state.enemies.splice(i, 1); }
+            } else { enemy.draw(); }
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function handleAuth() {
+        const grade = document.getElementById('select-grade').value;
+        const cls = document.getElementById('select-class').value;
+        const no = document.getElementById('input-no').value.trim();
+        const name = document.getElementById('input-name').value.trim();
+        if (name === ADMIN_CODE) { showAdminDashboard(); return; }
+        if (!no || !name) { alert("請填寫正確資訊。"); return; }
+        state.player = { class: `${grade}${cls}`, no: no, name: name };
+        document.getElementById('login-screen').classList.add('hidden');
+        startGame();
+    }
+
+    async function showAdminDashboard() {
+        document.getElementById('mission-screen').classList.add('hidden');
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('admin-screen').classList.remove('hidden');
+        const body = document.getElementById('records-body');
+        body.innerHTML = "<tr><td colspan='4' class='p-4 text-center'>載入中...</td></tr>";
+        try {
+            const { db, appId, collection, getDocs } = window.fbase;
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
+            const snap = await getDocs(q);
+            let res = []; snap.forEach(d => res.push(d.data()));
+            res.sort((a,b) => a.class.localeCompare(b.class) || a.no - b.no);
+            body.innerHTML = "";
+            res.forEach(d => {
+                body.insertAdjacentHTML('beforeend', `<tr class="border-b border-zinc-900"><td class="p-2">${d.class}</td><td class="p-2">${d.no}</td><td class="p-2">${d.name}</td><td class="p-2 text-green-500 font-bold">${d.score}</td></tr>`);
+            });
+        } catch (e) { body.innerHTML = "<tr><td colspan='4' class='p-4 text-center'>連線失敗</td></tr>"; }
+    }
+
+    function startGame() {
+        state.gameActive = true; state.hp = 5; state.score = 0; state.level = 1; state.levelKills = 0; state.enemies = []; state.isFirstSpawn = true;
+        updateUI(); if (recognition) { try { recognition.start(); } catch(e) {} } gameLoop();
+    }
+
+    async function syncData() {
+        try {
+            const { db, appId, setDoc, doc, serverTimestamp } = window.fbase;
+            if (!db) return;
+            const rid = `${state.player.class}_${state.player.no}_${Date.now()}`;
+            const missionId = `B${selectedBook}L${selectedLesson}`;
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scores', rid), {
+                ...state.player, 
+                score: state.score, 
+                mission: missionId,
+                difficulty: state.difficultyName, 
+                timestamp: serverTimestamp()
+            });
+        } catch (e) {}
+    }
+
+    function winGame() { state.gameActive = false; document.getElementById('win-screen').classList.remove('hidden'); document.getElementById('win-score').innerText = `SCORE: ${state.score}`; syncData(); }
+    function endGame() { state.gameActive = false; document.getElementById('game-over-screen').classList.remove('hidden'); document.getElementById('final-score-display').innerText = `SCORE: ${state.score}`; syncData(); }
+    function togglePause() { 
+        state.isPaused = !state.isPaused; 
+        document.getElementById('pause-screen').classList.toggle('hidden');
+        if (state.isPaused) { if (state.enemies[0]) document.getElementById('target-word-hint').innerText = state.enemies[0].word; if (recognition) recognition.stop(); }
+        else { if (recognition) try { recognition.start(); } catch(e) {} gameLoop(); }
+    }
+    function resumeGame() { togglePause(); }
+    function speakTarget() { const u = new SpeechSynthesisUtterance(document.getElementById('target-word-hint').innerText); u.lang = 'en-US'; u.rate = 0.8; speechSynthesis.speak(u); }
+</script>
+</body>
+</html>
