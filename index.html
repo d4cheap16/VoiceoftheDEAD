@@ -150,7 +150,7 @@
             padding: 20px;
         }
 
-        /* 後台介面優化 */
+        /* 後台介面專用字體 (黑體) */
         #admin-screen {
             font-family: 'Noto Sans TC', sans-serif !important;
             padding: 0;
@@ -197,6 +197,13 @@
             height: 100%;
             object-fit: cover;
             image-rendering: pixelated;
+        }
+
+        /* Combo 動效 */
+        #combo-display {
+            font-size: 12px;
+            color: var(--horror-yellow);
+            text-shadow: 0 0 5px orange;
         }
     </style>
 </head>
@@ -292,8 +299,9 @@
     <!-- 3. ALL CLEAR -->
     <div id="win-screen" class="overlay-screen hidden">
         <h1 class="text-green-500 pixel-font text-xl mb-4 flicker uppercase">All Clear</h1>
-        <div class="bg-black border border-green-900 p-6 mb-8 w-full max-w-xs text-center">
+        <div class="bg-black border border-green-900 p-6 mb-8 w-full max-w-xs text-center text-[10px]">
             <p id="win-score" class="pixel-font text-md text-yellow-500 mb-2 uppercase">Score: 0</p>
+            <p id="win-detail" class="text-zinc-500 uppercase mt-2">Area Secured.</p>
         </div>
         <button onclick="retreatToMenu()" class="btn w-full max-w-xs py-4 uppercase">Return Base</button>
     </div>
@@ -354,6 +362,7 @@
                 <div id="status-label" class="pixel-font status-fine">FINE</div>
                 <div id="score-display" class="text-[7px] text-zinc-600 pixel-font mt-1">000000</div>
             </div>
+            <div id="combo-display" class="pixel-font opacity-0 transition-opacity">0 COMBO</div>
             <div id="level-progress-ui" class="text-[6px] text-zinc-700 pixel-font mb-1 uppercase">Sec 1: 0/10</div>
         </div>
         <div class="flex items-center justify-center">
@@ -444,7 +453,6 @@
         }
     }
 
-    // 初始化載入
     loadBookData(4);
 
     function confirmMission() {
@@ -475,9 +483,8 @@
     }
 
     // --- Core Game Logic ---
-    const LEVEL_GOALS = { 1: 10, 2: 5 }; 
     let state = {
-        score: 0, hp: 5, level: 1, levelKills: 0, 
+        score: 0, hp: 5, level: 1, levelKills: 0, combo: 0,
         difficultyMultiplier: 1.0, difficultyName: "Veteran",
         isPaused: false, gameActive: false,
         enemies: [], player: { class: "", no: "", name: "" },
@@ -488,6 +495,13 @@
     const ctx = canvas.getContext('2d');
     const bloodOverlay = document.getElementById('blood-splatter');
     const mainContainer = document.getElementById('main-container');
+
+    // 動態計算過關條件
+    function getLevelGoal(lv) {
+        const base = lv === 1 ? 10 : 5;
+        // 依照難度提升目標數 (1.0倍, 1.5倍, 2.5倍...)
+        return Math.floor(base * state.difficultyMultiplier);
+    }
 
     function handleResize() {
         const dpr = window.devicePixelRatio || 1;
@@ -525,23 +539,16 @@
     class Enemy {
         constructor(word, lv, isElite = false, forceClose = false) {
             this.word = word;
-            // 隨機初始深度增加景深感 (0.0 到 0.2)
             this.z = forceClose ? 0.35 : (Math.random() * 0.2); 
-            
             const stageFactor = state.level === 2 ? 0.8 : 1.1; 
-            
-            // 快慢隨機化：分為 慢速(70%), 中速(25%), 快速(5%)
             let speedRoll = Math.random();
             let speedBase = 0.0006;
-            if (speedRoll > 0.95) speedBase = 0.0025; // Runner
-            else if (speedRoll > 0.7) speedBase = 0.0012; // Infected
+            if (speedRoll > 0.95) speedBase = 0.0025; 
+            else if (speedRoll > 0.7) speedBase = 0.0012; 
             
             this.speed = (speedBase + (Math.random() * 0.0004)) * state.difficultyMultiplier * (isElite ? 0.9 : 1) * stageFactor;
-            
-            // 隨機分佈更廣 (340)
             this.x = (Math.random() - 0.5) * 340; 
             this.y = (Math.random() - 0.5) * 60;
-            
             this.isDying = false;
             this.opacity = 0;
             this.isElite = isElite;
@@ -560,38 +567,26 @@
             const rect = canvas.parentElement.getBoundingClientRect();
             const w = rect.width;
             const h = rect.height;
-            
-            // 加入景深非線性縮放 (z=1 時最大)
             const size = (this.isElite ? 16 : 9) + (Math.pow(this.z, 2.2) * 260);
             const xPos = w / 2 + (this.x * this.z);
             const yPos = h / 2 + (this.y * this.z) + (this.z * (h * 0.35));
-            
             ctx.save();
             ctx.globalAlpha = this.opacity;
-            
-            // 景深明暗：越遠越暗 (z 越小越暗)
-            const depthBrightness = 0.15 + (Math.pow(this.z, 0.8) * 0.85);
-            ctx.filter = `brightness(${depthBrightness})`;
-            
-            // 繪製身體細節
+            const br = 0.15 + (Math.pow(this.z, 0.8) * 0.85);
+            ctx.filter = `brightness(${br})`;
             ctx.fillStyle = this.cShirt;
             ctx.fillRect(xPos - size*0.3, yPos - size*0.7, size*0.6, size*0.6); 
             ctx.fillStyle = this.cSkin;
             ctx.fillRect(xPos - size*0.2, yPos - size*1.1, size*0.4, size*0.4); 
-            
-            // 眼睛
             ctx.fillStyle = this.isElite ? 'cyan' : 'red';
             ctx.fillRect(xPos - size*0.12, yPos - size*1.0, size*0.06, size*0.06);
             ctx.fillRect(xPos + size*0.06, yPos - size*1.0, size*0.06, size*0.06);
-
-            // 單字文字
             const fontSize = Math.max(9, size/7.5);
             ctx.fillStyle = this.isElite ? 'gold' : '#fff';
             ctx.font = `bold ${fontSize}px 'Press Start 2P'`;
             ctx.textAlign = 'center';
             ctx.shadowBlur = 4; ctx.shadowColor = 'red';
             ctx.fillText(this.word, xPos, yPos - size*1.3);
-            
             ctx.restore();
         }
     }
@@ -600,8 +595,6 @@
         state.difficultyMultiplier = val;
         state.difficultyName = name;
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active-diff'));
-        
-        // 精確匹配按鈕 ID
         if (val === 0.7) document.getElementById('diff-rookie').classList.add('active-diff');
         if (val === 1.0) document.getElementById('diff-veteran').classList.add('active-diff');
         if (val === 1.5) document.getElementById('diff-nightmare').classList.add('active-diff');
@@ -610,25 +603,17 @@
 
     function spawnLogic() {
         if (!state.gameActive || state.isPaused) return;
-        
-        // 頻率隨難度提高
         const spawnInterval = 1600 / state.difficultyMultiplier;
-        
         if ((state.isFirstSpawn && state.enemies.length === 0) || (state.enemies.length < 4 && Date.now() - state.spawnTimer > spawnInterval)) {
             const list = currentLessonData.stages[state.level.toString()];
             const word = list[Math.floor(Math.random() * list.length)];
-            
             if (!state.enemies.some(e => e.word === word)) {
                 let newEnemy = new Enemy(word, state.level, Math.random() < 0.15, state.isFirstSpawn);
-                
-                // 強化分散邏輯：檢查水平距離 (x) 且考慮 深度 (z)
-                // 只有當 z 也很接近時，才需要避開 x
                 let attempts = 0;
                 while (attempts < 8 && state.enemies.some(e => Math.abs(e.x - newEnemy.x) < 80 && Math.abs(e.z - newEnemy.z) < 0.15)) {
                     newEnemy.x = (Math.random() - 0.5) * 340;
                     attempts++;
                 }
-
                 state.enemies.push(newEnemy);
                 state.spawnTimer = Date.now();
                 state.isFirstSpawn = false;
@@ -639,31 +624,64 @@
     function killEnemy(idx) {
         if (!state.enemies[idx]) return;
         state.enemies[idx].isDying = true;
-        state.score += (state.enemies[idx].isElite ? 500 : 100) * state.level;
+        
+        // Combo 與 得分邏輯
+        state.combo++;
+        const bonus = Math.floor(state.combo / 5) * 50; // 每 5 combo 額外獎勵
+        state.score += ((state.enemies[idx].isElite ? 500 : 100) + bonus) * state.level;
+        
         state.levelKills++;
         document.getElementById('current-word-ui').innerText = state.enemies[idx].word.toUpperCase();
-        if (state.levelKills >= LEVEL_GOALS[state.level]) {
-            if (state.level < 2) { state.level++; state.levelKills = 0; state.enemies = []; }
-            else { winGame(); }
+        
+        const goal = getLevelGoal(state.level);
+        if (state.levelKills >= goal) {
+            if (state.level < 2) { 
+                state.level++; 
+                state.levelKills = 0; 
+                state.enemies = []; 
+            } else { 
+                winGame(); 
+            }
         }
         updateUI();
     }
 
     function triggerDamage() {
-        state.hp--; bloodOverlay.style.opacity = "1";
+        state.hp--; 
+        state.combo = 0; // 受傷重置 Combo
+        bloodOverlay.style.opacity = "1";
         mainContainer.classList.add('shake-anim');
         setTimeout(() => { bloodOverlay.style.opacity = "0"; mainContainer.classList.remove('shake-anim'); }, 300);
-        updateUI(); if (state.hp <= 0) endGame();
+        updateUI(); 
+        if (state.hp <= 0) endGame();
     }
 
     function updateUI() {
         const statusLabel = document.getElementById('status-label');
-        if (state.hp >= 5) { statusLabel.innerText = "FINE"; statusLabel.className = "pixel-font status-fine"; }
-        else if (state.hp >= 3) { statusLabel.innerText = "CAUTION"; statusLabel.className = "pixel-font status-caution"; }
-        else { statusLabel.innerText = "DANGER"; statusLabel.className = "pixel-font status-danger"; }
+        // 更新血量標籤邏輯
+        if (state.hp >= 4) { 
+            statusLabel.innerText = "FINE"; 
+            statusLabel.className = "pixel-font status-fine"; 
+        } else if (state.hp >= 2) { 
+            statusLabel.innerText = "CAUTION"; 
+            statusLabel.className = "pixel-font status-caution"; 
+        } else { 
+            statusLabel.innerText = "DANGER"; 
+            statusLabel.className = "pixel-font status-danger"; 
+        }
+
+        // Combo 顯示
+        const comboEl = document.getElementById('combo-display');
+        if (state.combo >= 2) {
+            comboEl.innerText = `${state.combo} COMBO`;
+            comboEl.style.opacity = "1";
+        } else {
+            comboEl.style.opacity = "0";
+        }
 
         document.getElementById('score-display').innerText = state.score.toString().padStart(6, '0');
-        document.getElementById('level-progress-ui').innerText = `SEC ${state.level}: ${state.levelKills}/${LEVEL_GOALS[state.level]}`;
+        const goal = getLevelGoal(state.level);
+        document.getElementById('level-progress-ui').innerText = `SEC ${state.level}: ${state.levelKills}/${goal}`;
     }
 
     function gameLoop() {
@@ -672,19 +690,13 @@
         const w = rect.width;
         const h = rect.height;
         ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
-        
-        // 畫出遠方消失點線條，加強空間感
         ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 1; ctx.beginPath();
         for(let i=0; i<12; i++) {
             ctx.moveTo(w/2, h/2); ctx.lineTo(i * (w/11), h);
         }
         ctx.stroke();
-
         spawnLogic();
-        
-        // 根據深度 z 排序繪製順序，確保近的蓋過遠的
         state.enemies.sort((a, b) => a.z - b.z);
-        
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             const enemy = state.enemies[i];
             if (enemy.update()) {
@@ -697,16 +709,10 @@
 
     function handleAuth() {
         const nameInput = document.getElementById('input-name').value.trim();
-        
-        if (nameInput === ADMIN_NAME) { 
-            showAdminDashboard(); 
-            return; 
-        }
-        
+        if (nameInput === ADMIN_NAME) { showAdminDashboard(); return; }
         const no = document.getElementById('input-no').value.trim();
         const grade = document.getElementById('select-grade').value;
         const cls = document.getElementById('select-class').value;
-
         if (!no || !nameInput) return;
         state.player = { class: `${grade}${cls}`, no: no, name: nameInput };
         document.getElementById('login-screen').classList.add('hidden');
@@ -717,36 +723,22 @@
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('admin-screen').classList.remove('hidden');
         const body = document.getElementById('records-body');
-        body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-zinc-500'>ACCESSING ENCRYPTED DATABASE...</td></tr>";
+        body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-zinc-500'>ACCESSING...</td></tr>";
         try {
             const { db, appId, collection, getDocs } = window.fbase;
             const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'scores'));
             let res = []; snap.forEach(d => res.push(d.data()));
             res.sort((a,b) => a.class.localeCompare(b.class) || a.no - b.no);
-            
             body.innerHTML = "";
-            if (res.length === 0) {
-                body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-zinc-600'>NO ARCHIVE FOUND</td></tr>";
-            } else {
-                res.forEach(d => {
-                    body.insertAdjacentHTML('beforeend', `
-                        <tr>
-                            <td class="font-bold text-blue-400">${d.class}</td>
-                            <td class="text-zinc-500">${d.no}</td>
-                            <td class="text-zinc-200">${d.name}</td>
-                            <td class="text-green-500 font-bold">${d.score}</td>
-                            <td class="text-zinc-600 text-[10px]">${d.difficulty || 'Normal'}</td>
-                        </tr>
-                    `);
-                });
-            }
-        } catch (e) { body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-red-700 font-bold'>CRITICAL ERROR: CONNECTION REFUSED</td></tr>"; }
+            res.forEach(d => {
+                body.insertAdjacentHTML('beforeend', `<tr><td class="font-bold text-blue-400">${d.class}</td><td>${d.no}</td><td class="text-zinc-200">${d.name}</td><td class="text-green-500 font-bold">${d.score}</td><td class="text-zinc-600 text-[10px]">${d.difficulty || 'Veteran'}</td></tr>`);
+            });
+        } catch (e) { body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-red-700'>ERROR</td></tr>"; }
     }
 
     function startGame() {
-        state.gameActive = true; state.hp = 5; state.score = 0; state.level = 1; state.levelKills = 0; state.enemies = []; state.isFirstSpawn = true;
-        updateUI(); 
-        handleResize(); 
+        state.gameActive = true; state.hp = 5; state.score = 0; state.level = 1; state.levelKills = 0; state.combo = 0; state.enemies = []; state.isFirstSpawn = true;
+        updateUI(); handleResize(); 
         if (recognition) { try { recognition.start(); } catch(e) {} } 
         gameLoop();
     }
@@ -761,8 +753,18 @@
         } catch (e) {}
     }
 
-    function winGame() { state.gameActive = false; document.getElementById('win-screen').classList.remove('hidden'); document.getElementById('win-score').innerText = `SCORE: ${state.score}`; syncData(); }
-    function endGame() { state.gameActive = false; document.getElementById('game-over-screen').classList.remove('hidden'); document.getElementById('final-score-display').innerText = `SCORE: ${state.score}`; syncData(); }
+    function winGame() { 
+        state.gameActive = false; 
+        document.getElementById('win-screen').classList.remove('hidden'); 
+        document.getElementById('win-score').innerText = `SCORE: ${state.score}`; 
+        syncData(); 
+    }
+    function endGame() { 
+        state.gameActive = false; 
+        document.getElementById('game-over-screen').classList.remove('hidden'); 
+        document.getElementById('final-score-display').innerText = `SCORE: ${state.score}`; 
+        syncData(); 
+    }
     
     function togglePause() { 
         if (!state.gameActive) return;
