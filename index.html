@@ -280,6 +280,7 @@
             `<button onclick="selectBook(${i})" class="btn book-btn ${i===4?'active-diff':''}" id="b${i}">${['I','II','III','IV','V'][i-1]}</button>`).join('');
         
         refreshLessonGrid();
+        loadSavedProfile(); // 遊戲啟動時載入個人資料
         
         state.bgStars = [];
         for(let i=0; i<40; i++) {
@@ -289,6 +290,20 @@
                 z: Math.random(),
                 s: Math.random() * 1.5
             });
+        }
+    }
+
+    // 載入儲存在瀏覽器的個人資料
+    function loadSavedProfile() {
+        const saved = localStorage.getItem('vofd_profile');
+        if (saved) {
+            try {
+                const profile = JSON.parse(saved);
+                if (profile.grade) document.getElementById('select-grade').value = profile.grade;
+                if (profile.className) document.getElementById('select-class').value = profile.className;
+                if (profile.no) document.getElementById('input-no').value = profile.no;
+                if (profile.name) document.getElementById('input-name').value = profile.name;
+            } catch (e) { console.error("Profile load error", e); }
         }
     }
 
@@ -363,9 +378,17 @@
     window.handleAuth = async () => {
         const nameInput = document.getElementById('input-name').value.trim();
         if(nameInput === ADMIN_KEY) return showAdmin();
+        
+        const grade = document.getElementById('select-grade').value;
+        const className = document.getElementById('select-class').value;
         const no = document.getElementById('input-no').value.trim();
+        
         if(!nameInput || !no) return;
-        state.player = { name: nameInput, no, class: document.getElementById('select-grade').value + document.getElementById('select-class').value };
+        
+        // 儲存至 localStorage 以便下次使用
+        localStorage.setItem('vofd_profile', JSON.stringify({ grade, className, no, name: nameInput }));
+        
+        state.player = { name: nameInput, no, class: grade + className };
         document.getElementById('login-screen').classList.add('hidden');
         startGame();
     };
@@ -415,7 +438,7 @@
             if (this.isDying) { this.opacity -= 0.2; return this.opacity <= 0; }
             if (state.freezeTimer <= 0) {
                 if (state.bossMode && this.isBoss) {
-                    this.z += 0.00065 * state.difficulty; // BOSS 推進速度
+                    this.z += 0.00065 * state.difficulty; 
                 } else if (!state.bossMode) {
                     this.z += this.speed;
                 }
@@ -430,23 +453,20 @@
             const screenY = h/2 + (this.y * this.z) + (this.z * h * 0.45);
             ctx.save(); ctx.globalAlpha = this.opacity; ctx.translate(screenX, screenY);
             
-            // Minecraft Minecraft 結構
             ctx.fillStyle = `hsl(${this.clothesHue}, 40%, 35%)`;
-            ctx.fillRect(-size/3, -size/2.5, size/1.5, size/1.2); // 身體
+            ctx.fillRect(-size/3, -size/2.5, size/1.5, size/1.2); 
             ctx.fillStyle = `hsl(210, 30%, 20%)`;
-            ctx.fillRect(-size/3, size/4, size/1.5, size/4); // 褲子
+            ctx.fillRect(-size/3, size/4, size/1.5, size/4); 
             ctx.fillStyle = `hsl(${this.skinHue}, 45%, 50%)`;
-            ctx.fillRect(-size/3.5, -size*0.9, size/1.75, size/2.2); // 頭部
-            
-            // 手臂 (Minecraft 風格：伸出前方)
-            ctx.fillRect(-size/2, -size/3, size/6, size/3); // 左手
-            ctx.fillRect(size/3, -size/3, size/6, size/3); // 右手
+            ctx.fillRect(-size/3.5, -size*0.9, size/1.75, size/2.2); 
+            ctx.fillRect(-size/2, -size/3, size/6, size/3); 
+            ctx.fillRect(size/3, -size/3, size/6, size/3); 
 
-            ctx.fillStyle = "#000"; // 方眼
+            ctx.fillStyle = "#000"; 
             const eyeS = size/10;
             ctx.fillRect(-size/6, -size*0.75, eyeS, eyeS);
             ctx.fillRect(size/15, -size*0.75, eyeS, eyeS);
-            ctx.fillRect(-size/15, -size*0.6, size/7.5, eyeS/2); // 嘴巴
+            ctx.fillRect(-size/15, -size*0.6, size/7.5, eyeS/2); 
 
             if (isClosest && !this.isBoss) {
                 ctx.strokeStyle = '#f00'; ctx.lineWidth = 3;
@@ -587,7 +607,7 @@
 
     function hitBoss() {
         state.bossWordIndex++; state.shake = 20; createExplosion(state.enemies[0]);
-        if (state.enemies[0]) state.enemies[0].z = Math.max(0.2, state.enemies[0].z - 0.1); // 擊退 BOSS
+        if (state.enemies[0]) state.enemies[0].z = Math.max(0.2, state.enemies[0].z - 0.1); 
         
         if (state.bossWordIndex >= state.bossData.words.length) {
             state.enemies[0].isDying = true; state.bossesDefeated++;
@@ -614,12 +634,7 @@
         state.hp--; state.shake = 35; state.combo = 0;
         ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // 如果是 BOSS 撞擊，將 BOSS 重置到遠處繼續攻擊，而不是消失
-        if (state.bossMode && state.enemies[0]) {
-            state.enemies[0].z = 0.4;
-        }
-
+        if (state.bossMode && state.enemies[0]) state.enemies[0].z = 0.4;
         if (state.hp <= 0) endGame();
     }
 
@@ -650,7 +665,7 @@
             const en = state.enemies[i];
             if (en.update()) {
                 if (!en.isDying) triggerDamage(); 
-                if (!en.isBoss) state.enemies.splice(i, 1); // 普通怪消失，BOSS 則在 triggerDamage 內重置
+                if (!en.isBoss) state.enemies.splice(i, 1); 
             } else en.draw(ctx, w, h, en === closest);
         }
         for (let i = state.particles.length - 1; i >= 0; i--) {
@@ -692,6 +707,8 @@
     function winGame() { state.gameActive = false; if(wakeLock) releaseWakeLock(); document.getElementById('win-score-display').innerText = Math.floor(state.score); document.getElementById('win-screen').classList.remove('hidden'); syncData(); }
     function endGame() { state.gameActive = false; if(wakeLock) releaseWakeLock(); document.getElementById('fail-score-display').innerText = Math.floor(state.score); document.getElementById('game-over-screen').classList.remove('hidden'); syncData(); }
     
+    function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release(); wakeLock = null; } }
+
     window.togglePause = () => { 
         if(!state.gameActive) return;
         state.isPaused = !state.isPaused; 
