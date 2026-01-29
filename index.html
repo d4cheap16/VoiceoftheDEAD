@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <!-- Favicon 使用絕對路徑 -->
+    <!-- Favicon -->
     <link rel="icon" href="https://d4cheap16.github.io/VoiceoftheDEAD/zombie.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- 社群分享標籤 (Open Graph) -->
+    <!-- 社群分享標籤 (Open Graph) 與 搜尋引擎優化 (SEO) -->
     <title>Voice of the Dead</title>
     <meta name="description" content="Want to Survive? Speak!">
-    <meta property="og:title" content="Speak your way out.">
-    <meta property="og:description" content="Speak to excorcise.">
+    <meta property="og:title" content="Speak your way out. - Voice of the Dead">
+    <meta property="og:description" content="面對恐懼，大聲讀出咒語以驅除喪屍。這是一場結合聲音辨識與節奏的生存挑戰。">
+    <meta property="og:image" content="https://d4cheap16.github.io/VoiceoftheDEAD/opentag.png">
     <meta property="og:type" content="website">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,357 +21,205 @@
             --horror-red: #8b0000;
             --horror-green: #00ff00;
             --horror-yellow: #ffff00;
-            --ui-blue: #004488;
         }
 
         body {
             background-color: #000;
             color: #ccc;
-            /* 全域英文字體設為 Press Start 2P，中文自動 fallback */
             font-family: 'Press Start 2P', 'Noto Sans TC', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100dvh;
-            overflow: hidden;
-            user-select: none;
-            touch-action: manipulation;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            height: 100dvh; overflow: hidden;
+            user-select: none; touch-action: manipulation;
         }
 
-        .pixel-font { font-family: 'Press Start 2P', cursive; }
-
-        /* CRT 特效 */
+        /* CRT 掃描線特效 */
         .crt::before {
             content: " ";
-            display: block;
-            position: absolute;
+            display: block; position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            z-index: 100;
-            background-size: 100% 3px, 2px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            z-index: 100; background-size: 100% 3px, 2px 100%;
             pointer-events: none;
         }
 
-        @keyframes flicker {
-            0% { opacity: 0.98; }
-            5% { opacity: 0.95; }
-            100% { opacity: 1; }
+        /* 畫面故障特效 */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); filter: hue-rotate(90deg); }
+            40% { transform: translate(5px, -5px); }
+            60% { transform: translate(-5px, 0); }
+            100% { transform: translate(0); }
         }
-        .flicker { animation: flicker 0.15s infinite; }
-
-        @keyframes shake {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(-3px, 3px); }
-            50% { transform: translate(3px, -3px); }
-            75% { transform: translate(-3px, -3px); }
-        }
-        .shake-anim { animation: shake 0.3s; }
+        .glitch-active { animation: glitch 0.2s infinite; }
 
         .game-wrapper {
             position: relative;
-            width: 100%;
-            max-width: 500px; 
-            height: 100dvh;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border-left: 2px solid #222;
-            border-right: 2px solid #222;
+            width: 100%; max-width: 500px; height: 100dvh;
+            background: #000; display: flex; flex-direction: column;
+            overflow: hidden; border-left: 2px solid #222; border-right: 2px solid #222;
         }
 
-        /* 2/3 遊戲畫面 */
         .canvas-container {
-            width: 100%;
-            height: 67%;
-            position: relative;
-            border-bottom: 2px solid var(--horror-red);
-            overflow: hidden;
+            width: 100%; height: 67%;
+            position: relative; border-bottom: 2px solid var(--horror-red);
+            overflow: hidden; background: #050505;
         }
 
-        #game-canvas {
-            image-rendering: pixelated;
-            background: radial-gradient(circle, #151515 0%, #000 100%);
-            width: 100%;
-            height: 100%;
-        }
+        #game-canvas { image-rendering: pixelated; width: 100%; height: 100%; }
 
-        /* 1/3 UI 面板 */
         .ui-panel {
-            height: 33%;
-            width: 100%;
-            background: #050505;
-            padding: 12px 15px;
-            display: grid;
-            grid-template-rows: auto 1fr auto; 
-            gap: 10px;
-            z-index: 50;
-            box-sizing: border-box;
+            height: 33%; width: 100%; background: #050505;
+            padding: 12px 15px; display: grid; grid-template-rows: auto 1fr auto; 
+            gap: 10px; z-index: 50; box-sizing: border-box;
         }
 
         .btn {
-            background: #0a0a0a;
-            border: 1px solid #444;
-            color: #ccc;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 8px;
-            transition: all 0.1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #0a0a0a; border: 1px solid #444; color: #ccc;
+            padding: 10px; cursor: pointer; font-size: 8px;
             font-family: 'Press Start 2P', cursive;
+            transition: 0.1s;
         }
-        .btn:active { background: #333; color: #fff; }
-
-        select, input {
-            background: #000;
-            border: 1px solid #444;
-            color: #0f0;
-            padding: 12px;
-            font-size: 10px;
-            margin: 4px 0;
-            width: 100%;
-            border-radius: 2px;
-            font-family: 'Press Start 2P', 'Noto Sans TC', sans-serif;
-        }
+        .btn:active { background: #333; color: #fff; transform: scale(0.95); }
 
         .overlay-screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-            text-align: center;
-            padding: 20px;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            z-index: 200; text-align: center; padding: 20px;
         }
 
         .active-diff { border-color: #fff !important; background: #222 !important; color: #fff !important; }
-
-        #status-label {
-            font-size: 10px;
-            letter-spacing: 1px;
-            font-weight: bold;
+        
+        #boss-ui {
+            position: absolute; bottom: 20px; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            pointer-events: none; transition: opacity 0.5s; opacity: 0;
         }
-        .status-fine { color: var(--horror-green); }
-        .status-caution { color: var(--horror-yellow); }
-        .status-danger { color: var(--horror-red); }
+        .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.2); }
 
-        .banner-box {
-            width: 100%;
-            aspect-ratio: 1480 / 450;
-            background: #000;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .banner-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            image-rendering: pixelated;
+        .admin-table-container {
+            width: 100%; max-height: 300px; overflow-y: auto; font-size: 8px;
+            border: 1px solid #333; margin-top: 10px; background: #050505;
         }
 
-        #reward-toast {
-            position: absolute;
-            top: 20%;
-            width: 100%;
-            text-align: center;
-            pointer-events: none;
-            z-index: 100;
-            transition: all 0.5s ease-out;
-            opacity: 0;
-            transform: translateY(20px);
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-        .toast-active { opacity: 1 !important; transform: translateY(0) !important; }
-
-        #flash-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 67%;
-            background: white;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 120;
-        }
-
-        #current-word-ui {
-            background: rgba(20, 20, 20, 0.8);
-            padding: 8px;
-            border-radius: 4px;
-            min-height: 3em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px dashed #333;
-        }
+        .flicker { animation: flicker 0.2s infinite; }
     </style>
 </head>
 <body class="crt">
 
 <div class="game-wrapper" id="main-container">
-    <div id="reward-toast" class="pixel-font text-white text-[12px]"></div>
-    <div id="flash-overlay"></div>
+    <div id="flash-overlay" class="absolute inset-0 bg-white opacity-0 pointer-events-none z-[120]"></div>
 
-    <!-- 1. 任務選擇畫面 -->
+    <!-- 1. 任務選擇 -->
     <div id="mission-screen" class="overlay-screen">
-        <div class="banner-box">
-            <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Banner" onerror="this.style.display='none'">
-        </div>
-        <h1 class="pixel-font text-md mb-4 flicker" style="color:#ccc">SELECT SECTOR</h1>
-        <div class="bg-black p-4 border border-zinc-800 w-full max-w-sm flex flex-col items-center">
-            <div class="w-full mb-4">
-                <p class="text-[7px] text-zinc-600 mb-2 pixel-font uppercase">Data Volume</p>
-                <div class="grid grid-cols-5 gap-1">
-                    <button onclick="selectBook(1)" class="btn book-btn" id="b1">I</button>
-                    <button onclick="selectBook(2)" class="btn book-btn" id="b2">II</button>
-                    <button onclick="selectBook(3)" class="btn book-btn" id="b3">III</button>
-                    <button onclick="selectBook(4)" class="btn book-btn active-diff" id="b4">IV</button>
-                    <button onclick="selectBook(5)" class="btn book-btn" id="b5">V</button>
-                </div>
-            </div>
-            <div class="w-full mb-4">
-                <p class="text-[7px] text-zinc-600 mb-2 pixel-font uppercase">Sector Unit</p>
-                <div class="grid grid-cols-3 gap-1">
-                    <button onclick="selectLesson(1)" class="btn lesson-btn active-diff" id="l1">1</button>
-                    <button onclick="selectLesson(2)" class="btn lesson-btn" id="l2">2</button>
-                    <button onclick="selectLesson(3)" class="btn lesson-btn" id="l3">3</button>
-                    <button onclick="selectLesson(4)" class="btn lesson-btn" id="l4">4</button>
-                    <button onclick="selectLesson(5)" class="btn lesson-btn" id="l5">5</button>
-                    <button onclick="selectLesson(6)" class="btn lesson-btn" id="l6">6</button>
-                    <button onclick="selectLesson(7)" class="btn lesson-btn" id="l7">7</button>
-                    <button onclick="selectLesson(8)" class="btn lesson-btn" id="l8">8</button>
-                    <button onclick="selectLesson(9)" class="btn lesson-btn" id="l9">9</button>
-                </div>
-            </div>
-            <div id="mission-status" class="text-[7px] pixel-font text-zinc-500 mb-4 h-4 uppercase">...system idle...</div>
-            <button onclick="confirmMission()" id="confirm-mission-btn" class="btn w-full py-4 text-white bg-blue-900 border-blue-500" disabled>CONFIRM</button>
+        <h1 class="text-md mb-6 text-red-600 tracking-tighter">VOICE OF THE DEAD</h1>
+        <div class="bg-black p-4 border border-zinc-800 w-full max-w-sm">
+            <p class="text-[7px] text-zinc-600 mb-2 uppercase text-left">Data Volume</p>
+            <div class="grid grid-cols-5 gap-1 mb-4" id="book-grid"></div>
+            <p class="text-[7px] text-zinc-600 mb-2 uppercase text-left">Sector Unit</p>
+            <div class="grid grid-cols-3 gap-1 mb-4" id="lesson-grid"></div>
+            <div id="mission-status" class="text-[7px] text-zinc-500 mb-4 h-4 uppercase">Archive Standby</div>
+            <button onclick="confirmMission()" id="confirm-mission-btn" class="btn w-full py-4 text-white bg-blue-900 border-blue-500" disabled>ENTER SECTOR</button>
         </div>
     </div>
 
-    <!-- 2. 登錄畫面 -->
+    <!-- 2. 登錄與難度 -->
     <div id="login-screen" class="overlay-screen hidden">
-        <div class="banner-box">
-            <img src="https://d4cheap16.github.io/VoiceoftheDEAD/missionbanner.png" alt="Banner" onerror="this.style.display='none'">
-        </div>
-        <h1 class="pixel-font text-sm mb-4 text-blue-500 uppercase" id="selected-mission-title">MISSION ID</h1>
-        <div class="flex flex-col items-center bg-black p-4 border border-zinc-800 w-full max-w-sm">
-            <p class="text-[7px] text-zinc-600 mb-4 pixel-font uppercase">Member Registration</p>
-            <div class="flex gap-1 w-full">
-                <select id="select-grade">
-                    <option value="高一">10</option>
-                    <option value="高二">11</option>
-                    <option value="高三">12</option>
+        <h2 id="selected-mission-title" class="text-blue-500 mb-4 text-[10px] uppercase">MISSION ID</h2>
+        <div class="bg-black p-4 border border-zinc-800 w-full max-w-sm space-y-4">
+            <div class="flex gap-1">
+                <select id="select-grade" class="bg-black border border-zinc-700 p-2 text-[8px] w-1/2">
+                    <option value="G10">10</option><option value="G11">11</option><option value="G12">12</option>
                 </select>
-                <select id="select-class">
-                    <option value="知足">知足</option>
-                    <option value="感恩">感恩</option>
-                    <option value="善解">善解</option>
-                    <option value="包容">包容</option>
-                    <option value="大愛">大愛</option>
-                    <option value="外校">外校</option>
+                <select id="select-class" class="bg-black border border-zinc-700 p-2 text-[8px] w-1/2">
+                    <option value="知足">知足</option><option value="感恩">感恩</option><option value="善解">善解</option><option value="包容">包容</option>
                 </select>
             </div>
-            <input type="number" id="input-no" placeholder="NUMBER" pattern="\d*">
-            <input type="text" id="input-name" placeholder="NAME">
-            <div class="mt-4 w-full">
-                <p class="text-[7px] text-zinc-600 mb-2 pixel-font uppercase">Difficulty</p>
-                <div class="grid grid-cols-2 gap-1">
-                    <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn" id="diff-rookie">Rookie</button>
-                    <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn active-diff" id="diff-veteran">Veteran</button>
-                    <button onclick="setDifficulty(1.5, 'Nightmare')" class="btn diff-btn" id="diff-nightmare">Nightmare</button>
-                    <button onclick="setDifficulty(2.5, 'NO HOPE')" class="btn diff-btn text-red-500" id="diff-nohope">NO HOPE</button>
-                </div>
+            <input type="number" id="input-no" placeholder="NUMBER" class="bg-black border border-zinc-700 p-3 w-full text-green-500 text-[10px]">
+            <input type="text" id="input-name" placeholder="NAME" class="bg-black border border-zinc-700 p-3 w-full text-green-500 text-[10px]">
+            <p class="text-[7px] text-zinc-600 uppercase text-left">Difficulty Level</p>
+            <div class="grid grid-cols-2 gap-1">
+                <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn" id="diff-rookie">Rookie</button>
+                <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn active-diff" id="diff-veteran">Veteran</button>
+                <button onclick="setDifficulty(1.5, 'Nightmare')" class="btn diff-btn" id="diff-nightmare">Nightmare</button>
+                <button onclick="setDifficulty(2.5, 'NoHope')" class="btn diff-btn text-red-600" id="diff-nohope">NO HOPE</button>
             </div>
-            <div class="flex gap-2 w-full mt-6">
-                 <button onclick="backToMissionSelect()" class="btn w-1/3 bg-zinc-900">BACK</button>
-                 <button id="start-btn" onclick="handleAuth()" class="btn w-2/3 bg-red-950 border-red-700 text-red-500">INITIATE</button>
+            <div class="flex gap-2">
+                <button onclick="backToMission()" class="btn w-1/3 text-[7px]">BACK</button>
+                <button id="start-btn" onclick="handleAuth()" class="btn w-2/3 py-4 bg-red-900 text-white">INITIATE</button>
             </div>
         </div>
     </div>
 
-    <!-- 3. ALL CLEAR -->
-    <div id="win-screen" class="overlay-screen hidden">
-        <h1 id="win-title" class="text-green-500 pixel-font text-xl mb-4 flicker uppercase">All Clear</h1>
-        <div class="bg-black border border-green-900 p-6 mb-8 w-full max-w-xs text-center text-[10px]">
-            <p id="win-score" class="pixel-font text-md text-yellow-500 mb-2 uppercase">Score: 0</p>
-            <p id="win-detail" class="text-zinc-500 uppercase mt-2">Area Secured.</p>
-        </div>
-        <button onclick="retreatToMenu()" class="btn w-full max-w-xs py-4 uppercase">Return Base</button>
-    </div>
-
-    <!-- Game Over -->
-    <div id="game-over-screen" class="overlay-screen hidden">
-        <h2 class="pixel-font text-red-700 text-xl mb-6 flicker uppercase">You are dead.</h2>
-        <p id="final-score-display" class="pixel-font text-[8px] text-zinc-500 mb-8 uppercase"></p>
-        <div class="flex flex-col gap-3 w-full max-w-xs">
-            <button onclick="restartCurrentGame()" class="btn w-full py-4 bg-red-950 text-red-500 border-red-700 uppercase">Retry</button>
-            <button onclick="retreatToMenu()" class="btn w-full py-4 uppercase">Give Up</button>
-        </div>
-    </div>
-
-    <!-- Admin Screen -->
-    <div id="admin-screen" class="overlay-screen hidden flex flex-col">
-        <h2 class="text-blue-600 mb-4 uppercase">Archive Data</h2>
+    <!-- 3. 管理員終端 -->
+    <div id="admin-screen" class="overlay-screen hidden">
+        <h2 class="text-blue-600 mb-2">ARCHIVE TERMINAL</h2>
         <div class="admin-table-container">
             <table class="w-full text-left">
                 <thead class="bg-zinc-900 sticky top-0">
-                    <tr><th>Class</th><th>No</th><th>Name</th><th>Score</th><th>Diff</th></tr>
+                    <tr><th class="p-1">CLS</th><th class="p-1">NO</th><th class="p-1">NAME</th><th class="p-1">SCR</th><th class="p-1">DIF</th></tr>
                 </thead>
                 <tbody id="records-body"></tbody>
             </table>
         </div>
-        <div class="p-4 bg-zinc-900 w-full border-t border-zinc-800">
-            <button onclick="location.reload()" class="btn w-full py-3 bg-blue-950 border-blue-700 text-white uppercase">Close Terminal</button>
-        </div>
+        <button onclick="location.reload()" class="btn mt-4 px-6 py-2">LOGOUT</button>
     </div>
 
-    <!-- Pause Screen -->
-    <div id="pause-screen" class="overlay-screen hidden">
-        <h2 class="pixel-font text-zinc-500 text-lg mb-4 uppercase">Paused</h2>
-        <div id="target-word-hint" class="text-sm text-white font-bold mb-10 border-y border-zinc-800 py-6 w-full text-center tracking-widest uppercase">---</div>
-        <div class="flex flex-col gap-4 w-full max-w-xs px-4">
-            <button onclick="speakTarget()" class="btn bg-blue-900 py-4 uppercase">Play Voice</button>
-            <button onclick="resumeGame()" class="btn bg-green-950 py-4 uppercase">Resume</button>
+    <!-- BOSS UI -->
+    <div id="boss-ui" class="z-[150] px-4 w-full">
+        <div class="w-full bg-zinc-900 h-2 border border-white mb-2 overflow-hidden">
+            <div id="boss-hp-bar" class="h-full bg-red-600 transition-all duration-300" style="width: 100%"></div>
         </div>
+        <div id="boss-sentence" class="flex flex-wrap justify-center gap-2 text-[9px] bg-black/80 p-3 border border-zinc-700"></div>
     </div>
 
-    <div class="canvas-container">
+    <!-- 勝利畫面 -->
+    <div id="win-screen" class="overlay-screen hidden">
+        <h1 class="text-green-500 text-xl mb-4 flicker">MISSION COMPLETE</h1>
+        <p class="text-zinc-500 text-[10px] mb-2 uppercase">Final Score</p>
+        <p id="win-score-display" class="text-yellow-500 text-3xl mb-8">0</p>
+        <button onclick="location.reload()" class="btn px-10 py-4 uppercase">Return Base</button>
+    </div>
+
+    <!-- 死亡畫面 -->
+    <div id="game-over-screen" class="overlay-screen hidden">
+        <h1 class="text-red-700 text-xl mb-6 flicker uppercase">You are dead</h1>
+        <p class="text-zinc-500 text-[10px] mb-2 uppercase">Final Score</p>
+        <p id="fail-score-display" class="text-yellow-500 text-3xl mb-10">0</p>
+        <button onclick="location.reload()" class="btn px-10 py-4 uppercase">Retry Mission</button>
+    </div>
+
+    <div class="canvas-container" id="canvas-holder">
         <canvas id="game-canvas"></canvas>
     </div>
 
-    <!-- 下方 UI Panel -->
     <div class="ui-panel">
-        <div class="flex justify-between items-end border-b border-zinc-800 pb-2">
-            <div class="flex flex-col">
-                <div id="status-label" class="pixel-font status-fine">FINE</div>
-                <div id="score-display" class="text-[7px] text-zinc-600 pixel-font mt-1">000000</div>
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+            <div>
+                <div id="status-label" class="text-green-500 text-[10px]">FINE</div>
+                <div id="score-display" class="text-[8px] text-zinc-600 mt-1">000000</div>
             </div>
-            <div id="combo-display" class="pixel-font opacity-0 transition-opacity">0 COMBO</div>
-            <div id="level-progress-ui" class="text-[6px] text-zinc-700 pixel-font mb-1 uppercase">Sec 1: 0/10</div>
+            <div id="combo-display" class="text-yellow-500 text-[10px] opacity-0">0 COMBO</div>
         </div>
-        <div class="flex items-center justify-center">
-            <div id="current-word-ui" class="text-[9px] md:text-[11px] text-zinc-300 font-bold text-center leading-tight uppercase tracking-widest">AWAITING TARGET...</div>
+        <div id="current-word-ui" class="flex items-center justify-center text-[10px] text-center text-zinc-400 px-4">
+            AWAITING SIGNAL...
         </div>
         <div class="grid grid-cols-2 gap-2">
-            <button onclick="togglePause()" class="btn !py-3 uppercase">Pause</button>
-            <button onclick="retreatToMenu()" class="btn !py-3 bg-zinc-900 uppercase">Retreat</button>
+            <button onclick="togglePause()" class="btn py-3 uppercase">Pause</button>
+            <button onclick="location.reload()" class="btn py-3 uppercase">Retreat</button>
         </div>
     </div>
-
-    <div id="blood-splatter" class="fixed inset-0 pointer-events-none bg-red-900/30 opacity-0 transition-opacity duration-300 z-[150]"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDocs, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -382,445 +231,310 @@
         appId: "1:757378314086:web:aa598f79e28e3cb6a122a7"
     };
 
-    let app, auth, db;
-    try {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-        window.fbase = { db, auth, setDoc, doc, collection, serverTimestamp, getDocs };
-        signInAnonymously(auth);
-    } catch (e) { console.error(e); }
-    window.appId = 'voice-shooter-101';
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    window.fbase = { db, setDoc, doc, collection, getDocs, serverTimestamp, appId: 'voice-reborn-101' };
+    signInAnonymously(auth);
 </script>
 
 <script>
-    const ADMIN_NAME = "AdaWong";
-    let selectedBook = 4; 
-    let selectedLesson = 1; 
-    let currentBookData = {}; 
-    let currentLessonData = null; 
-    let wakeLock = null; // 用於儲存螢幕鎖定物件
-
-    // 防止手機螢幕自動關閉
-    async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen');
-                console.log('Wake Lock is active');
-            }
-        } catch (err) {
-            console.error(`${err.name}, ${err.message}`);
-        }
-    }
-
-    function releaseWakeLock() {
-        if (wakeLock !== null) {
-            wakeLock.release();
-            wakeLock = null;
-            console.log('Wake Lock released');
-        }
-    }
-
-    async function loadBookData(bookNum) {
-        const statusEl = document.getElementById('mission-status');
-        const btn = document.getElementById('confirm-mission-btn');
-        statusEl.innerText = `ACCESSING ARCHIVE ${bookNum}...`;
-        try {
-            const response = await fetch(`book${bookNum}.json`);
-            if (!response.ok) throw new Error();
-            currentBookData = await response.json();
-            statusEl.innerText = `ARCHIVE ${bookNum} READY`;
-            checkDataAvailability();
-        } catch (error) {
-            currentBookData = {}; 
-            statusEl.innerText = `ACCESS DENIED`;
-            checkDataAvailability();
-        }
-    }
-
-    function selectBook(n) {
-        selectedBook = n;
-        document.querySelectorAll('.book-btn').forEach(b => b.classList.remove('active-diff'));
-        document.getElementById(`b${n}`).classList.add('active-diff');
-        loadBookData(n);
-    }
-
-    function selectLesson(n) {
-        selectedLesson = n;
-        document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active-diff'));
-        document.getElementById(`l${n}`).classList.add('active-diff');
-        checkDataAvailability();
-    }
-
-    function checkDataAvailability() {
-        const key = `L${selectedLesson}`;
-        const statusEl = document.getElementById('mission-status');
-        const btn = document.getElementById('confirm-mission-btn');
-        if (currentBookData && currentBookData[key]) {
-            statusEl.innerText = `READY: ${currentBookData[key].title.toUpperCase()}`;
-            btn.disabled = false;
-        } else {
-            btn.disabled = true;
-            statusEl.innerText = "NO DATA FOUND";
-        }
-    }
-
-    loadBookData(4);
-
-    function confirmMission() {
-        const key = `L${selectedLesson}`;
-        currentLessonData = currentBookData[key];
-        document.getElementById('mission-screen').classList.add('hidden');
-        document.getElementById('login-screen').classList.remove('hidden');
-        document.getElementById('selected-mission-title').innerText = currentLessonData.title.toUpperCase();
-    }
-
-    function backToMissionSelect() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('mission-screen').classList.remove('hidden');
-    }
-
-    function retreatToMenu() {
-        state.gameActive = false;
-        releaseWakeLock(); // 退出時釋放鎖定
-        if (recognition) recognition.stop();
-        document.getElementById('win-screen').classList.add('hidden');
-        document.getElementById('game-over-screen').classList.add('hidden');
-        document.getElementById('pause-screen').classList.add('hidden');
-        document.getElementById('mission-screen').classList.remove('hidden');
-    }
-
-    function restartCurrentGame() {
-        document.getElementById('game-over-screen').classList.add('hidden');
-        startGame();
-    }
-
-    // --- Core Game Logic ---
+    const ADMIN_KEY = "AdaWong";
     let state = {
-        score: 0, hp: 5, level: 1, levelKills: 0, combo: 0,
-        damageTaken: 0,
-        isPaused: false, gameActive: false,
-        isFlashActive: false,
-        enemies: [], player: { class: "", no: "", name: "" },
-        spawnTimer: 0, isFirstSpawn: true,
-        difficultyMultiplier: 1.0, difficultyName: "Veteran"
+        score: 0, hp: 5, gameActive: false, isPaused: false,
+        level: 1, kills: 0, combo: 0,
+        difficulty: 1.0, difficultyMode: 'Veteran',
+        bossesDefeated: 0,
+        enemies: [], particles: [],
+        shake: 0, bossMode: false, bossData: null, bossWordIndex: 0,
+        spawnTimer: 0, player: { name: "", no: "", class: "" }
     };
 
     const canvas = document.getElementById('game-canvas');
     const ctx = canvas.getContext('2d');
-    const bloodOverlay = document.getElementById('blood-splatter');
-    const flashOverlay = document.getElementById('flash-overlay');
-    const mainContainer = document.getElementById('main-container');
+    let currentBookData = {};
+    let selectedBook = 4;
+    let selectedLesson = 1;
+    let wakeLock = null;
 
-    function getLevelGoal(lv) {
-        const base = lv === 1 ? 10 : 5;
-        return Math.floor(base * state.difficultyMultiplier);
+    function initUI() {
+        document.getElementById('book-grid').innerHTML = [1,2,3,4,5].map(i => 
+            `<button onclick="selectBook(${i})" class="btn book-btn ${i===4?'active-diff':''}" id="b${i}">${['I','II','III','IV','V'][i-1]}</button>`).join('');
+        document.getElementById('lesson-grid').innerHTML = [1,2,3,4,5,6,7,8,9].map(i => 
+            `<button onclick="selectLesson(${i})" class="btn lesson-btn ${i===1?'active-diff':''}" id="l${i}">${i}</button>`).join('');
+    }
+    initUI();
+
+    async function requestWakeLock() {
+        try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
     }
 
-    function handleResize() {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
+    async function loadBookData(n) {
+        selectedBook = n;
+        const status = document.getElementById('mission-status');
+        status.innerText = `ACCESSING ARCHIVE ${n}...`;
+        try {
+            const res = await fetch(`book${n}.json`);
+            currentBookData = await res.json();
+            status.innerText = `SECTOR ${n} READY`;
+            checkMissionValid();
+        } catch(e) { status.innerText = `ACCESS DENIED`; }
     }
-    window.addEventListener('resize', handleResize);
-    handleResize();
+    window.selectBook = (n) => {
+        document.querySelectorAll('.book-btn').forEach(b => b.classList.remove('active-diff'));
+        document.getElementById(`b${n}`).classList.add('active-diff');
+        loadBookData(n);
+    };
+    window.selectLesson = (n) => {
+        selectedLesson = n;
+        document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active-diff'));
+        document.getElementById(`l${n}`).classList.add('active-diff');
+        checkMissionValid();
+    };
+    function checkMissionValid() {
+        const btn = document.getElementById('confirm-mission-btn');
+        const data = currentBookData[`L${selectedLesson}`];
+        if (data) {
+            btn.disabled = false;
+            document.getElementById('mission-status').innerText = `TARGET: ${data.title.toUpperCase()}`;
+        } else { btn.disabled = true; }
+    }
+    loadBookData(4);
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        recognition.onresult = (event) => {
-            if (state.isPaused || !state.gameActive) return;
-            let transcript = "";
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                transcript += event.results[i][0].transcript.toUpperCase();
-            }
-            
-            const cleanText = (t) => t.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s+/g, ' ').trim();
-            const cleanTranscript = cleanText(transcript);
+    window.confirmMission = () => {
+        document.getElementById('mission-screen').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('selected-mission-title').innerText = currentBookData[`L${selectedLesson}`].title;
+    };
+    window.backToMission = () => {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('mission-screen').classList.remove('hidden');
+    };
 
-            state.enemies.forEach((enemy, index) => {
-                if (!enemy.isDying) {
-                    const cleanWord = cleanText(enemy.word.toUpperCase());
-                    if (cleanTranscript.includes(cleanWord)) killEnemy(index);
-                }
-            });
-        };
-        recognition.onend = () => { if (state.gameActive && !state.isPaused) try { recognition.start(); } catch(e) {} };
+    window.handleAuth = async () => {
+        const nameInput = document.getElementById('input-name').value;
+        if(nameInput === ADMIN_KEY) return showAdmin();
+        const no = document.getElementById('input-no').value;
+        if(!nameInput || !no) return;
+        state.player = { name: nameInput, no, class: document.getElementById('select-grade').value + document.getElementById('select-class').value };
+        document.getElementById('login-screen').classList.add('hidden');
+        startGame();
+    };
+
+    async function showAdmin() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('admin-screen').classList.remove('hidden');
+        const body = document.getElementById('records-body');
+        body.innerHTML = "<tr><td colspan='5' class='p-4 text-center'>ACCESSING...</td></tr>";
+        try {
+            const { db, appId, collection, getDocs } = window.fbase;
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'scores'));
+            let res = []; snap.forEach(d => res.push(d.data()));
+            res.sort((a,b) => a.class.localeCompare(b.class) || a.no - b.no);
+            body.innerHTML = res.map(d => `<tr><td class="p-1 text-blue-400">${d.class}</td><td class="p-1">${d.no}</td><td class="p-1 text-zinc-200">${d.name}</td><td class="p-1 text-green-500">${d.score}</td><td class="p-1 text-[6px]">${d.difficulty || 'V'}</td></tr>`).join('');
+        } catch(e) { body.innerHTML = "SYSTEM ERROR"; }
+    }
+
+    window.setDifficulty = (val, mode) => {
+        state.difficulty = val; state.difficultyMode = mode;
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active-diff'));
+        document.getElementById(`diff-${mode.toLowerCase()}`).classList.add('active-diff');
+    };
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y; this.color = color;
+            this.vx = (Math.random() - 0.5) * 8; this.vy = (Math.random() - 0.5) * 8;
+            this.alpha = 1; this.size = Math.random() * 3 + 1;
+        }
+        update() { this.x += this.vx; this.y += this.vy; this.alpha -= 0.03; return this.alpha > 0; }
+        draw(ctx) { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.size, this.size); ctx.restore(); }
     }
 
     class Enemy {
-        constructor(word, lv, isElite = false, forceClose = false) {
-            this.word = word;
-            this.z = forceClose ? 0.45 : (Math.random() * 0.2); 
-            
-            const wordCount = word.split(' ').length;
-            const sentenceSlowdown = wordCount > 3 ? 0.7 : 1.0; 
-
-            const stageFactor = state.level === 2 ? 0.8 : 1.1; 
-            let speedRoll = Math.random();
-            let speedBase = 0.0007; // 稍微調快基礎速度
-            if (speedRoll > 0.95) speedBase = 0.0028; 
-            else if (speedRoll > 0.75) speedBase = 0.0014; 
-            
-            this.speed = (speedBase + (Math.random() * 0.0005)) * state.difficultyMultiplier * (isElite ? 0.85 : 1) * stageFactor * sentenceSlowdown;
-            this.x = (Math.random() - 0.5) * 360; 
-            this.y = (Math.random() - 0.5) * 60;
-            this.isDying = false;
-            this.opacity = 0;
-            this.isElite = isElite;
-            // 菁英怪隨機詭異配色
-            this.cSkin = isElite ? (Math.random() > 0.5 ? '#4a008b' : '#005f5f') : (Math.random() > 0.5 ? '#3d5c31' : '#567d46');
-            this.cShirt = isElite ? (Math.random() > 0.5 ? '#ffd700' : '#ff00ff') : (Math.random() > 0.5 ? '#4a4a4a' : '#2e2e2e');
+        constructor(word, isBoss = false) {
+            this.word = word; this.isBoss = isBoss; this.z = 0;
+            this.x = (Math.random() - 0.5) * 380; this.y = (Math.random() - 0.5) * 80;
+            this.speed = (0.0008 + Math.random() * 0.0007) * state.difficulty;
+            this.isDying = false; this.opacity = 1; this.wobbleSeed = Math.random() * 100;
         }
         update() {
-            if (this.isDying) return (this.opacity -= 0.15) <= 0;
-            if (!state.isFlashActive) { this.z += this.speed; }
-            if (this.opacity < 1) this.opacity += 0.1;
+            if (this.isDying) { this.opacity -= 0.15; return this.opacity <= 0; }
+            if (!state.bossMode) this.z += this.speed;
             return this.z >= 1;
         }
-        draw() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            const w = rect.width; const h = rect.height;
-            
-            // 強化壓迫感：增加基礎 size 與 scaling 常數
-            const baseSize = this.isElite ? 22 : 12;
-            const size = baseSize + (Math.pow(this.z, 2.0) * 350); 
-            
-            const xPos = w / 2 + (this.x * this.z);
-            const yPos = h / 2 + (this.y * this.z) + (this.z * (h * 0.4));
-            
-            ctx.save();
-            ctx.globalAlpha = this.opacity;
-            const depthBrightness = 0.2 + (Math.pow(this.z, 0.7) * 0.8);
-            ctx.filter = `brightness(${depthBrightness})`;
-            
-            // 菁英怪氣場特效
-            if (this.isElite) {
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = (Date.now() % 400 < 200) ? 'purple' : 'cyan';
-            }
+        draw(ctx, w, h, isClosest) {
+            const scale = this.isBoss ? 2.8 : 1.0;
+            const size = (12 + Math.pow(this.z, 2) * 320) * scale;
+            const wobbleX = Math.sin(Date.now() * 0.005 + this.wobbleSeed) * 8 * this.z;
+            const wobbleY = Math.cos(Date.now() * 0.007 + this.wobbleSeed) * 4 * this.z;
+            const screenX = w/2 + (this.x * this.z) + wobbleX;
+            const screenY = h/2 + (this.y * this.z) + (this.z * h * 0.45) + wobbleY;
 
-            // 身體 (菁英怪更寬)
-            const bodyW = this.isElite ? size*0.8 : size*0.6;
-            ctx.fillStyle = this.cShirt;
-            ctx.fillRect(xPos - bodyW/2, yPos - size*0.7, bodyW, size*0.6); 
-            
-            // 頭部 (菁英怪造型誇張：更尖或更高)
-            ctx.fillStyle = this.cSkin;
-            if (this.isElite) {
-                // 尖頭形狀
-                ctx.beginPath();
-                ctx.moveTo(xPos - size*0.25, yPos - size*0.7);
-                ctx.lineTo(xPos, yPos - size*1.3);
-                ctx.lineTo(xPos + size*0.25, yPos - size*0.7);
-                ctx.fill();
-            } else {
-                ctx.fillRect(xPos - size*0.2, yPos - size*1.1, size*0.4, size*0.4); 
-            }
-            
-            // 眼睛 (閃爍感)
-            ctx.fillStyle = this.isElite ? ((Date.now() % 200 < 100) ? 'white' : 'cyan') : 'red';
-            ctx.fillRect(xPos - size*0.12, yPos - size*1.0, size*0.06, size*0.06);
-            ctx.fillRect(xPos + size*0.06, yPos - size*1.0, size*0.06, size*0.06);
+            ctx.save(); ctx.globalAlpha = this.opacity; ctx.translate(screenX, screenY);
+            const b = 25 + (this.z * 75);
+            ctx.fillStyle = `rgb(${b}, ${b+15}, ${b})`;
+            ctx.fillRect(-size/3, -size/2, size/1.5, size/1.5);
+            ctx.fillStyle = `rgb(${b+30}, ${b-10}, ${b-10})`;
+            ctx.fillRect(-size/6, -size*0.9, size/3, size/3);
 
-            // 文字 UI 優化
-            const fontSize = Math.max(9, Math.min(12, size/7));
-            ctx.font = `bold ${fontSize}px 'Press Start 2P'`;
-            const textWidth = ctx.measureText(this.word).width;
-            ctx.fillStyle = "rgba(0,0,0,0.7)";
-            ctx.fillRect(xPos - (textWidth/2) - 5, yPos - size*1.4 - fontSize, textWidth + 10, fontSize + 8);
-            ctx.fillStyle = this.isElite ? 'gold' : '#fff';
-            ctx.textAlign = 'center';
-            ctx.shadowBlur = 4; ctx.shadowColor = 'red';
-            
-            if (this.word.length > 20) {
-                const mid = Math.floor(this.word.length / 2);
-                const spaceIdx = this.word.lastIndexOf(' ', mid);
-                const line1 = this.word.substring(0, spaceIdx);
-                const line2 = this.word.substring(spaceIdx + 1);
-                ctx.fillText(line1, xPos, yPos - size*1.5);
-                ctx.fillText(line2, xPos, yPos - size*1.3);
-            } else {
-                ctx.fillText(this.word, xPos, yPos - size*1.4);
+            if (isClosest && !this.isBoss) {
+                ctx.strokeStyle = '#f00'; ctx.lineWidth = 2;
+                ctx.strokeRect(-size/2 - 5, -size - 5, size + 10, size + 10);
             }
-            
+            if (!this.isBoss) {
+                ctx.font = `${Math.max(7, size/7)}px 'Press Start 2P'`;
+                ctx.fillStyle = isClosest ? '#fff' : '#666'; ctx.textAlign = 'center';
+                ctx.fillText(this.word.toUpperCase(), 0, -size * 1.1);
+            }
             ctx.restore();
         }
     }
 
-    function setDifficulty(val, name) {
-        state.difficultyMultiplier = val;
-        state.difficultyName = name;
-        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active-diff'));
-        if (val === 0.7) document.getElementById('diff-rookie').classList.add('active-diff');
-        if (val === 1.0) document.getElementById('diff-veteran').classList.add('active-diff');
-        if (val === 1.5) document.getElementById('diff-nightmare').classList.add('active-diff');
-        if (val === 2.5) document.getElementById('diff-nohope').classList.add('active-diff');
+    function startGame() {
+        state.gameActive = true; state.hp = 5; state.score = 0; state.kills = 0; state.bossesDefeated = 0;
+        state.enemies = []; state.particles = [];
+        requestWakeLock(); handleResize(); initSpeech(); requestAnimationFrame(gameLoop);
+    }
+    function handleResize() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
     }
 
-    function spawnLogic() {
-        if (!state.gameActive || state.isPaused || state.isFlashActive) return;
-        const spawnInterval = 1500 / state.difficultyMultiplier;
-        if ((state.isFirstSpawn && state.enemies.length === 0) || (state.enemies.length < 4 && Date.now() - state.spawnTimer > spawnInterval)) {
-            const list = currentLessonData.stages[state.level.toString()];
-            const word = list[Math.floor(Math.random() * list.length)];
-            if (!state.enemies.some(e => e.word === word)) {
-                let newEnemy = new Enemy(word, state.level, Math.random() < 0.2, state.isFirstSpawn);
-                let attempts = 0;
-                while (attempts < 8 && state.enemies.some(e => Math.abs(e.x - newEnemy.x) < 90 && Math.abs(e.z - newEnemy.z) < 0.15)) {
-                    newEnemy.x = (Math.random() - 0.5) * 360;
-                    attempts++;
-                }
-                state.enemies.push(newEnemy);
-                state.spawnTimer = Date.now();
-                state.isFirstSpawn = false;
-            }
-        }
+    let recognition;
+    function initSpeech() {
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Speech) return;
+        recognition = new Speech();
+        recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+        recognition.onresult = (e) => {
+            let transcript = "";
+            for (let i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript.toLowerCase();
+            processCommand(transcript);
+        };
+        recognition.onend = () => { if(state.gameActive && !state.isPaused) try { recognition.start(); } catch(e){} };
+        recognition.start();
     }
 
-    function triggerReward() {
-        const rewards = ["RECOVER (+1 HP)", "FLASH (Freeze 3s)", "ELIMINATE (Remove 1)"];
-        const roll = Math.floor(Math.random() * rewards.length);
-        const toast = document.getElementById('reward-toast');
-        toast.innerText = `REWARD: ${rewards[roll]}`;
-        toast.classList.add('toast-active');
-        setTimeout(() => toast.classList.remove('toast-active'), 2000);
-
-        if (roll === 0) state.hp = Math.min(5, state.hp + 1);
-        else if (roll === 1) {
-            state.isFlashActive = true;
-            flashOverlay.style.opacity = "0.7";
-            setTimeout(() => flashOverlay.style.opacity = "0", 300);
-            setTimeout(() => { state.isFlashActive = false; }, 3000);
-        } else if (roll === 2) {
-            const activeEnemies = state.enemies.filter(e => !e.isDying);
-            if (activeEnemies.length > 0) activeEnemies[Math.floor(Math.random() * activeEnemies.length)].isDying = true;
+    function processCommand(text) {
+        const clean = (s) => s.replace(/[.,!?]/g, "").trim();
+        const input = clean(text);
+        if (state.bossMode) {
+            if (input.includes(clean(state.bossData.words[state.bossWordIndex].toLowerCase()))) hitBoss();
+        } else {
+            const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
+            if (closest && input.includes(clean(closest.word.toLowerCase()))) killEnemy(state.enemies.indexOf(closest));
         }
-        updateUI();
     }
 
     function killEnemy(idx) {
-        if (!state.enemies[idx]) return;
-        state.enemies[idx].isDying = true;
-        state.combo++;
-        if (state.combo > 0 && state.combo % 10 === 0) triggerReward();
+        const en = state.enemies[idx]; en.isDying = true;
+        state.score += 100; state.kills++; state.combo++;
+        createExplosion(en); state.shake = 12;
         
-        const comboBonus = Math.floor(state.combo / 5) * 50;
-        state.score += ((state.enemies[idx].isElite ? 600 : 100) + comboBonus) * state.level;
-        state.levelKills++;
-        
-        const goal = getLevelGoal(state.level);
-        if (state.levelKills >= goal) {
-            if (state.level < 2) { state.level++; state.levelKills = 0; state.enemies = []; }
-            else { winGame(); }
-        }
-        updateUI();
+        let trigger = false;
+        if(state.difficultyMode==='Rookie' && state.kills>=10) trigger=true;
+        else if(state.difficultyMode==='Veteran' && state.kills>=15) trigger=true;
+        else if(state.difficultyMode==='Nightmare' && state.kills>=15) trigger=true;
+        else if(state.difficultyMode==='NoHope' && state.kills>=10) trigger=true;
+        if(trigger) startBossBattle();
+    }
+
+    function startBossBattle() {
+        state.bossMode = true; state.enemies = [new Enemy("BOSS", true)]; state.enemies[0].z = 0.5;
+        const sents = currentBookData[`L${selectedLesson}`].stages["2"];
+        const full = sents[Math.floor(Math.random() * sents.length)];
+        state.bossData = { full, words: full.split(' ') }; state.bossWordIndex = 0;
+        document.getElementById('boss-ui').style.opacity = '1';
+        const container = document.getElementById('boss-sentence');
+        container.innerHTML = state.bossData.words.map((w, i) => `<span id="bw-${i}">${w}</span>`).join(' ');
+        updateBossUI();
+    }
+
+    function updateBossUI() {
+        state.bossData.words.forEach((_, i) => {
+            const el = document.getElementById(`bw-${i}`);
+            el.className = i < state.bossWordIndex ? 'text-zinc-600 line-through' : (i === state.bossWordIndex ? 'boss-word-active' : 'text-white');
+        });
+        document.getElementById('boss-hp-bar').style.width = (100 - (state.bossWordIndex/state.bossData.words.length*100)) + '%';
+    }
+
+    function hitBoss() {
+        state.bossWordIndex++; state.shake = 18; createExplosion(state.enemies[0]);
+        if (state.bossWordIndex >= state.bossData.words.length) {
+            state.enemies[0].isDying = true; state.bossesDefeated++;
+            setTimeout(() => {
+                let win = false; let next = false;
+                if(state.difficultyMode==='Rookie'||state.difficultyMode==='Veteran') win=true;
+                else if(state.difficultyMode==='Nightmare') { if(state.bossesDefeated<2) next=true; else win=true; }
+                else if(state.difficultyMode==='NoHope') { if(state.bossesDefeated<3) { state.kills=0; state.bossMode=false; document.getElementById('boss-ui').style.opacity='0'; } else win=true; }
+                if(next) startBossBattle(); else if(win) winGame();
+            }, 800);
+        } else updateBossUI();
+    }
+
+    function createExplosion(en) {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const x = rect.width/2 + (en.x * en.z);
+        const y = rect.height/2 + (en.y * en.z) + (en.z * rect.height * 0.45);
+        for(let i=0; i<12; i++) state.particles.push(new Particle(x, y, '#5a5'));
     }
 
     function triggerDamage() {
-        state.hp--; 
-        state.damageTaken++;
-        state.combo = 0; 
-        bloodOverlay.style.opacity = "1";
-        mainContainer.classList.add('shake-anim');
-        setTimeout(() => { bloodOverlay.style.opacity = "0"; mainContainer.classList.remove('shake-anim'); }, 300);
-        updateUI(); 
+        state.hp--; state.shake = 35; state.combo = 0;
+        document.getElementById('main-container').classList.add('glitch-active');
+        setTimeout(() => document.getElementById('main-container').classList.remove('glitch-active'), 400);
         if (state.hp <= 0) endGame();
-    }
-
-    function updateUI() {
-        const statusLabel = document.getElementById('status-label');
-        if (state.hp >= 4) { statusLabel.innerText = "FINE"; statusLabel.className = "pixel-font status-fine"; }
-        else if (state.hp >= 2) { statusLabel.innerText = "CAUTION"; statusLabel.className = "pixel-font status-caution"; }
-        else { statusLabel.innerText = "DANGER"; statusLabel.className = "pixel-font status-danger"; }
-
-        const comboEl = document.getElementById('combo-display');
-        if (state.combo >= 2) { comboEl.innerText = `${state.combo} COMBO`; comboEl.style.opacity = "1"; }
-        else { comboEl.style.opacity = "0"; }
-
-        document.getElementById('score-display').innerText = state.score.toString().padStart(6, '0');
-        document.getElementById('level-progress-ui').innerText = `SEC ${state.level}: ${state.levelKills}/${getLevelGoal(state.level)}`;
-        
-        const target = state.enemies.filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
-        const uiWord = document.getElementById('current-word-ui');
-        if (target) {
-            uiWord.innerText = target.word.toUpperCase();
-            uiWord.classList.add('text-white');
-            uiWord.classList.remove('text-zinc-600');
-        } else {
-            uiWord.innerText = "AWAITING TARGET...";
-            uiWord.classList.remove('text-white');
-            uiWord.classList.add('text-zinc-600');
-        }
     }
 
     function gameLoop() {
         if (!state.gameActive || state.isPaused) return;
         const rect = canvas.parentElement.getBoundingClientRect();
         const w = rect.width; const h = rect.height;
-        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
         
-        ctx.strokeStyle = '#0e0e0e'; ctx.lineWidth = 1; ctx.beginPath();
-        for(let i=0; i<16; i++) { ctx.moveTo(w/2, h/2); ctx.lineTo(i * (w/15), h); }
-        ctx.stroke();
-        
-        spawnLogic();
-        state.enemies.sort((a, b) => a.z - b.z);
-        for (let i = state.enemies.length - 1; i >= 0; i--) {
-            const enemy = state.enemies[i];
-            if (enemy.update()) {
-                if (!enemy.isDying) { state.enemies.splice(i, 1); triggerDamage(); }
-                else { state.enemies.splice(i, 1); }
-            } else { enemy.draw(); }
+        if (state.shake > 0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake *= 0.85; }
+
+        if (!state.bossMode && Date.now() - state.spawnTimer > 2000/state.difficulty) {
+            const list = currentBookData[`L${selectedLesson}`].stages["1"];
+            state.enemies.push(new Enemy(list[Math.floor(Math.random()*list.length)]));
+            state.spawnTimer = Date.now();
         }
-        updateUI();
+
+        const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
+        for (let i = state.enemies.length - 1; i >= 0; i--) {
+            const en = state.enemies[i];
+            if (en.update()) {
+                if (!en.isDying) { triggerDamage(); state.enemies.splice(i, 1); }
+                else state.enemies.splice(i, 1);
+            } else en.draw(ctx, w, h, en === closest);
+        }
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+            if (!state.particles[i].update()) state.particles.splice(i, 1);
+            else state.particles[i].draw(ctx);
+        }
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        updateUIPanel();
         requestAnimationFrame(gameLoop);
     }
 
-    function handleAuth() {
-        const nameInput = document.getElementById('input-name').value.trim();
-        if (nameInput === ADMIN_NAME) { showAdminDashboard(); return; }
-        const no = document.getElementById('input-no').value.trim();
-        const grade = document.getElementById('select-grade').value;
-        const cls = document.getElementById('select-class').value;
-        if (!no || !nameInput) return;
-        state.player = { class: `${grade}${cls}`, no: no, name: nameInput };
-        document.getElementById('login-screen').classList.add('hidden');
-        startGame();
-    }
+    function updateUIPanel() {
+        document.getElementById('score-display').innerText = state.score.toString().padStart(6, '0');
+        const comboEl = document.getElementById('combo-display');
+        comboEl.style.opacity = state.combo > 1 ? '1' : '0'; comboEl.innerText = `${state.combo} COMBO`;
+        const status = document.getElementById('status-label');
+        if (state.hp > 3) { status.innerText = 'FINE'; status.className = 'text-green-500 text-[10px]'; }
+        else if (state.hp > 1) { status.innerText = 'CAUTION'; status.className = 'text-yellow-500 text-[10px]'; }
+        else { status.innerText = 'DANGER'; status.className = 'text-red-600 text-[10px]'; }
 
-    async function showAdminDashboard() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('admin-screen').classList.remove('hidden');
-        const body = document.getElementById('records-body');
-        body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-zinc-500'>ACCESSING...</td></tr>";
-        try {
-            const { db, appId, collection, getDocs } = window.fbase;
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'scores'));
-            let res = []; snap.forEach(d => res.push(d.data()));
-            res.sort((a,b) => a.class.localeCompare(b.class) || a.no - b.no);
-            body.innerHTML = "";
-            res.forEach(d => {
-                body.insertAdjacentHTML('beforeend', `<tr><td class="font-bold text-blue-400">${d.class}</td><td>${d.no}</td><td class="text-zinc-200">${d.name}</td><td class="text-green-500 font-bold">${d.score}</td><td class="text-zinc-600 text-[10px]">${d.difficulty || 'Normal'}</td></tr>`);
-            });
-        } catch (e) { body.innerHTML = "<tr><td colspan='5' class='p-8 text-center text-red-700'>ERROR</td></tr>"; }
-    }
-
-    function startGame() {
-        state.gameActive = true; 
-        state.hp = 5; state.score = 0; state.level = 1; state.levelKills = 0; state.combo = 0; state.damageTaken = 0; state.enemies = []; state.isFirstSpawn = true;
-        
-        requestWakeLock(); // 請求螢幕常亮鎖定
-        
-        updateUI(); handleResize(); 
-        if (recognition) { try { recognition.start(); } catch(e) {} } 
-        gameLoop();
+        const target = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
+        let t = "AWAITING...";
+        if (state.bossMode) t = `BOSS STAGE (${state.bossesDefeated+1})`;
+        else if (target) t = target.word.toUpperCase();
+        document.getElementById('current-word-ui').innerText = t;
     }
 
     async function syncData() {
@@ -828,56 +542,31 @@
             const { db, appId, setDoc, doc, serverTimestamp } = window.fbase;
             const rid = `${state.player.class}_${state.player.no}_${Date.now()}`;
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'scores', rid), {
-                ...state.player, score: state.score, difficulty: state.difficultyName, timestamp: serverTimestamp()
+                ...state.player, score: state.score, difficulty: state.difficultyMode, timestamp: serverTimestamp()
             });
-        } catch (e) {}
+        } catch(e){}
     }
 
     function winGame() { 
         state.gameActive = false; 
-        releaseWakeLock(); // 釋放鎖定
-        const winTitle = document.getElementById('win-title');
-        const winDetail = document.getElementById('win-detail');
-        if (state.damageTaken === 0) {
-            winTitle.innerText = "PERFECT CLEAR";
-            winTitle.className = "text-yellow-500 pixel-font text-xl mb-4 flicker uppercase";
-            winDetail.innerText = "GODLIKE SURVIVOR. NO DAMAGE TAKEN.";
-            winDetail.className = "text-yellow-600 uppercase mt-2 font-bold";
-        } else {
-            winTitle.innerText = "ALL CLEAR";
-            winTitle.className = "text-green-500 pixel-font text-xl mb-4 flicker uppercase";
-            winDetail.innerText = "AREA SECURED.";
-            winDetail.className = "text-zinc-500 uppercase mt-2";
-        }
+        if(wakeLock) wakeLock.release(); 
+        document.getElementById('win-score-display').innerText = state.score;
         document.getElementById('win-screen').classList.remove('hidden'); 
-        document.getElementById('win-score').innerText = `SCORE: ${state.score}`; 
         syncData(); 
     }
     function endGame() { 
         state.gameActive = false; 
-        releaseWakeLock(); // 釋放鎖定
+        if(wakeLock) wakeLock.release(); 
+        document.getElementById('fail-score-display').innerText = state.score;
         document.getElementById('game-over-screen').classList.remove('hidden'); 
-        document.getElementById('final-score-display').innerText = `SCORE: ${state.score}`; 
         syncData(); 
     }
     
-    function togglePause() { 
-        if (!state.gameActive) return;
+    window.togglePause = () => { 
         state.isPaused = !state.isPaused; 
-        document.getElementById('pause-screen').classList.toggle('hidden');
-        if (state.isPaused) { 
-            releaseWakeLock(); // 暫停時釋放鎖定
-            if (recognition) recognition.stop(); 
-            if (state.enemies[0]) document.getElementById('target-word-hint').innerText = state.enemies[0].word.toUpperCase(); 
-        }
-        else { 
-            requestWakeLock(); // 恢復時重新鎖定
-            if (recognition) try { recognition.start(); } catch(e) {} 
-            gameLoop(); 
-        }
-    }
-    function resumeGame() { togglePause(); }
-    function speakTarget() { const u = new SpeechSynthesisUtterance(document.getElementById('target-word-hint').innerText); u.lang = 'en-US'; speechSynthesis.speak(u); }
+        if (!state.isPaused) requestAnimationFrame(gameLoop); 
+    };
+    window.addEventListener('resize', handleResize);
 </script>
 </body>
 </html>
