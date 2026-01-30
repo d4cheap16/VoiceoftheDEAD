@@ -1051,7 +1051,7 @@
         executeReward('CRITICAL');
         state.enemies.forEach((e, i) => {
             if (!e.isDying && !e.isBoss) {
-                killEnemy(i, true);
+                killEnemy(i, false);
             }
         });
     }
