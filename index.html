@@ -152,14 +152,14 @@
 
         #boss-ui {
             position: absolute; 
-            bottom: 36%; 
+            bottom: 35%; /* 緊貼 UI Panel 上方 */
             left: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
             pointer-events: none; transition: opacity 0.5s; opacity: 0;
             z-index: 150;
-            padding-bottom: 20px;
+            padding-bottom: 2px;
         }
-        .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
+        .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); display: inline-block;}
 
         #reward-toast {
             position: absolute; top: 25%; width: 100%; text-align: center;
@@ -353,7 +353,7 @@
         <div class="w-full bg-zinc-900 h-3 border-2 border-white mb-2 overflow-hidden rounded-full">
             <div id="boss-hp-bar" class="h-full bg-red-600 transition-all duration-300" style="width: 100%"></div>
         </div>
-        <div id="boss-sentence" class="flex flex-wrap justify-center gap-2 text-[10px] bg-black/90 p-4 border border-red-900 rounded-lg shadow-xl"></div>
+        <!-- 移除 boss-sentence，將內容移至 UI 面板 -->
     </div>
 
     <div id="win-screen" class="overlay-screen hidden">
@@ -403,11 +403,12 @@
             </div>
         </div>
 
-        <div class="flex flex-col items-center justify-center bg-zinc-900/40 rounded-lg border border-zinc-800 p-2 relative">
-            <p class="text-[6px] text-zinc-600 mb-1 uppercase tracking-widest">Targeting</p>
-            <div id="current-word-ui" class="text-[12px] text-center text-white font-bold tracking-wider uppercase">AWAITING SIGNAL...</div>
+        <div class="flex flex-col items-center justify-center bg-zinc-900/40 rounded-lg border border-zinc-800 p-2 relative h-full">
+            <p id="targeting-label" class="text-[6px] text-zinc-600 mb-1 uppercase tracking-widest">Targeting</p>
+            <!-- 允許句子換行顯示 -->
+            <div id="current-word-ui" class="text-[12px] text-center text-white font-bold tracking-wider uppercase flex flex-wrap justify-center gap-1 w-full overflow-hidden">AWAITING SIGNAL...</div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 mt-1">
             <button onclick="togglePause()" class="btn py-4 font-bold uppercase">Pause</button>
             <button onclick="location.reload()" class="btn py-4 uppercase">Retreat</button>
         </div>
@@ -445,22 +446,19 @@
         "https://d4cheap16.github.io/tddt/BG05.png"
     ];
 
-    /* --- BOSS 戰參數設定區 (可依此調整) ---
-       1. startZ: BOSS 起始距離 (0 = 極遠, 1 = 面前). 越小越遠.
-       2. speed: BOSS 移動速度. 
-       3. sentencesRequired: 需要念完幾句才能殺死 BOSS (累積血量制).
-    */
+    /* --- BOSS 戰參數設定區 (速度已大幅調快) --- */
     const BOSS_CONFIG_DATA = {
-        'Rookie':    { startZ: 0.25, speed: 0.0012, sentencesRequired: 1 },
-        'Veteran':   { startZ: 0.20, speed: 0.0018, sentencesRequired: 2 },
-        'Nightmare': { startZ: 0.15, speed: 0.0024, sentencesRequired: 3 },
-        'NoHope':    { startZ: 0.10, speed: 0.0032, sentencesRequired: 5 }
+        // [參數調整]: speed 數值越大，BOSS 移動越快
+        'Rookie':    { startZ: 0.50, speed: 0.0020, sentencesRequired: 2 }, 
+        'Veteran':   { startZ: 0.55, speed: 0.0030, sentencesRequired: 3 },
+        'Nightmare': { startZ: 0.60, speed: 0.0040, sentencesRequired: 4 },
+        'NoHope':    { startZ: 0.65, speed: 0.0055, sentencesRequired: 6 }
     };
 
     const BOSS_BEHAVIOR = { 
-        sprintZ: 0.75, // 當距離超過此值，BOSS 會加速 (Sprint)
-        sprintMultiplier: 1.5, // 加速倍率
-        pushback: { 'Rookie': 0.4, 'Veteran': 0.35, 'Nightmare': 0.3, 'NoHope': 0.25 } // 受傷後(念錯或被攻擊)不退後，但念完一句會退後
+        sprintZ: 0.75, 
+        sprintMultiplier: 1.5, 
+        pushback: { 'Rookie': 0.4, 'Veteran': 0.35, 'Nightmare': 0.3, 'NoHope': 0.25 }
     };
     
     // BOSS 戰鬥細節 (暈眩、擊退等)
@@ -495,14 +493,11 @@
             'Nightmare': { maxHP: 4, damageShake: 45 },
             'NoHope':    { maxHP: 3, damageShake: 60 }
         },
-        // [新增] 獨立的判定距離設定
-        // deathZ: 攻擊判定距離 (0.0~1.0)，越小代表離玩家越遠就會判定攻擊。
-        // bossShakeZ: BOSS 引發地震的距離 (0.0~1.0)，越小代表越早開始震動。
         THRESHOLDS: {
             'Rookie':    { deathZ: 0.95, bossShakeZ: 0.5 },
             'Veteran':   { deathZ: 0.90, bossShakeZ: 0.4 },
             'Nightmare': { deathZ: 0.85, bossShakeZ: 0.3 },
-            'NoHope':    { deathZ: 0.80, bossShakeZ: 0.2 }
+            'NoHope':    { deathZ: 0.85, bossShakeZ: 0.2 }
         }
     };
 
@@ -1372,16 +1367,19 @@
         state.bossData = { full, words: full.split(' ') }; 
         state.bossWordIndex = 0;
         
-        // 更新文字 UI
-        const container = document.getElementById('boss-sentence');
-        container.innerHTML = state.bossData.words.map((w, i) => `<span id="bw-${i}">${w}</span>`).join(' ');
+        // 更新文字 UI (直接寫入下方的 current-word-ui)
+        const container = document.getElementById('current-word-ui');
+        container.innerHTML = state.bossData.words.map((w, i) => `<span id="bw-${i}" class="boss-word-pending">${w}</span>`).join(' ');
         updateBossUI();
     }
 
     function updateBossUI() {
         state.bossData.words.forEach((_, i) => {
             const el = document.getElementById(`bw-${i}`);
-            el.className = i < state.bossWordIndex ? 'text-zinc-600 line-through' : (i === state.bossWordIndex ? 'boss-word-active font-bold' : 'text-white');
+            // 更新下方單字的狀態：劃掉 vs 高亮 vs 普通
+            if (el) {
+                el.className = i < state.bossWordIndex ? 'text-zinc-600 line-through' : (i === state.bossWordIndex ? 'boss-word-active font-bold text-green-400' : 'text-white');
+            }
         });
         
         // 血條顯示當前句子的進度
@@ -1536,12 +1534,25 @@
             status.innerText = 'DANGER'; status.className = 'pixel-font text-red-600 text-[8px] font-bold flicker'; 
             ecgPath.setAttribute('stroke', 'red'); ecgLine.style.animationDuration = "0.5s"; 
         }
-        const target = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
-        let t = "AWAITING...";
-        // 修改：UI 顯示改為顯示剩餘句數
-        if (state.bossMode) t = `BOSS THREAT LEVEL: ${state.bossSentencesCleared}/${state.bossSentencesRequired}`;
-        else if (target) t = target.word.toUpperCase();
-        document.getElementById('current-word-ui').innerText = t;
+        
+        // --- 修正 UI 更新邏輯 ---
+        const labelEl = document.getElementById('targeting-label');
+        const wordEl = document.getElementById('current-word-ui');
+
+        if (state.bossMode) {
+            // BOSS 模式：修改標題，且"不要"覆寫 current-word-ui 的內容 (因為已經由 updateBossUI 接管)
+            labelEl.innerText = "BOSS SEQUENCE";
+            labelEl.className = "text-[6px] text-red-500 mb-1 uppercase tracking-widest flicker";
+        } else {
+            // 一般模式：正常顯示
+            labelEl.innerText = "TARGETING";
+            labelEl.className = "text-[6px] text-zinc-600 mb-1 uppercase tracking-widest";
+            
+            const target = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
+            let t = "AWAITING...";
+            if (target) t = target.word.toUpperCase();
+            wordEl.innerText = t; // 這裡直接覆寫文字
+        }
     }
 
     async function syncData() {
