@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
     <link rel="icon" href="https://d4cheap16.github.io/tddt/zombie.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <title>The Dead don't talk?</title>
+    <title>Dead Don't Talk</title>
     <meta name="description" content="Want to Survive? Speak!">
-    <meta property="og:title" content="The dead don't talk, but you do.">
+    <meta property="og:title" content="Dead don't talk, but you do.">
     <meta property="og:description" content="用聲音在末日中生存。">
+    <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
     <meta property="og:image" content="https://d4cheap16.github.io/tddt/opentag.png">
     <meta property="og:type" content="website">
 
@@ -95,7 +97,6 @@
         }
         select:focus, input:focus { border-color: #0f0 !important; }
 
-        /* 隱藏數字輸入框的上下箭頭 */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
@@ -143,7 +144,6 @@
         }
         .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
 
-        /* 修改後的獎勵提示樣式：更接近死亡畫面的大標題風格 */
         #reward-toast {
             position: absolute; 
             top: 25%; 
@@ -154,10 +154,10 @@
             transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0; 
             transform: scale(0.5);
-            font-size: 24px; /* 加大字體 */
+            font-size: 24px; 
             font-weight: 700;
             color: #fff; 
-            text-shadow: 0 0 15px currentColor; /* 光暈效果 */
+            text-shadow: 0 0 15px currentColor; 
             font-family: 'Press Start 2P', cursive;
             line-height: 1.5;
             padding: 0 10px;
@@ -182,7 +182,6 @@
         }
         .flicker { animation: flicker 0.15s infinite; }
         
-        /* 完美通關特效 */
         @keyframes shine { 
             0% { transform: scale(1); text-shadow: 0 0 10px gold; } 
             50% { transform: scale(1.1); text-shadow: 0 0 30px yellow, 0 0 50px orange; } 
@@ -199,7 +198,6 @@
             display: none; /* 預設隱藏 */
         }
 
-        /* Debug Panel 樣式 (靠右對齊，避免遮擋) */
         #debug-panel {
             position: absolute; top: 0; right: 0; width: 100%; height: 100%;
             background: transparent; pointer-events: none; z-index: 300;
@@ -224,7 +222,6 @@
         .debug-btn:hover { background: #005500; }
         .debug-info { font-family: monospace; white-space: pre-wrap; margin-top: 10px; color: #aaa; font-size: 7px; max-height: 200px; overflow-y: auto;}
 
-        /* 心電圖動畫 */
         .ecg-container {
             width: 100%; height: 30px;
             background: #000;
@@ -262,9 +259,9 @@
     <!-- 1. 任務選擇 -->
     <div id="mission-screen" class="overlay-screen">
         <div class="banner-box">
+            <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
             <img src="https://d4cheap16.github.io/tddt/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
         </div>
-        <!-- 修正標題 -->
         <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Dead Don't Talk</h1>
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
@@ -285,6 +282,7 @@
     <!-- 2. 登錄與難度 -->
     <div id="login-screen" class="overlay-screen hidden">
         <div class="banner-box">
+            <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
             <img src="https://d4cheap16.github.io/tddt/missionbanner.png" alt="Mission Banner" onerror="this.style.display='none'">
         </div>
         <h2 id="selected-mission-title" class="text-blue-500 mb-6 text-[11px] uppercase tracking-widest">MISSION ID</h2>
@@ -342,7 +340,7 @@
         </div>
     </div>
 
-    <!-- Debug 面板 (遊戲中顯示) -->
+    <!-- Debug 面板 -->
     <div id="debug-panel" class="hidden flex-col items-end justify-start">
         <div class="debug-controls">
             <div class="text-[10px] mb-2 font-bold uppercase text-center border-b border-green-500 pb-1">Debug Controls</div>
@@ -465,7 +463,7 @@
 <script>
     const ADMIN_KEY = "AdaWong";
     
-    // 背景圖清單
+    // 背景圖清單 - 修改路徑
     const BGS = [
         "https://d4cheap16.github.io/tddt/BG01.png",
         "https://d4cheap16.github.io/tddt/BG02.png",
@@ -479,34 +477,49 @@
     const BOSS_SPEEDS = {
         'Rookie': 0.0010,    
         'Veteran': 0.0013,   
-        'Nightmare': 0.0015, 
-        'NoHope': 0.0020     
+        'Nightmare': 0.0018, 
+        'NoHope': 0.0025     
+    };
+
+    // 新增：一般敵人行為參數 (控制最後衝刺)
+    const ENEMY_BEHAVIOR = {
+        sprintZ: 0.75,       // 當距離 > 0.75 時開始衝刺
+        sprintMultiplier: 1.5 // 速度提升 1.5 倍
+    };
+
+    const BOSS_BEHAVIOR = {
+        sprintZ: 0.4, 
+        sprintMultiplier: 3.0, 
+        pushback: {
+            'Rookie': 0.5,    
+            'Veteran': 0.6,   
+            'Nightmare': 0.7, 
+            'NoHope': 0.8     
+        }
     };
 
     const ENEMY_SPEEDS = {
         'Rookie':   { min: 0.0005, max: 0.0010 },
-        'Veteran':  { min: 0.0008, max: 0.0015 },
-        'Nightmare':{ min: 0.0013, max: 0.0020 },
+        'Veteran':  { min: 0.0008, max: 0.0016 },
+        'Nightmare':{ min: 0.0012, max: 0.0020 },
         'NoHope':   { min: 0.0020, max: 0.0030 }
     };
 
     const REWARD_CONFIG = {
         'RECOVER': {
             text: "RECOVER!",
-            textColor: "#4ade80", 
-            // 移除外框線，使用大字體和陰影取代
-            // borderColor: "#4ade80", 
+            textColor: "#6ee7b7", 
+            borderColor: "#6ee7b7",
             boxShadow: "none", 
-            overlayColor: "rgba(0, 255, 0, 0.5)", 
+            overlayColor: "rgba(110, 231, 183, 0.4)", 
             overlayDuration: 600, 
             effect: (state) => { state.hp = Math.min(5, state.hp + 1); }
         },
         'FLASH': {
             text: "PRESENT FOR YOU!",
             textColor: "#67e8f9", 
-            // borderColor: "#67e8f9",
             boxShadow: "none",
-            overlayColor: "rgba(255, 255, 255, 0.4)", // 修正：降低不透明度
+            overlayColor: "rgba(255, 255, 255, 0.4)", 
             overlayDuration: 1500, 
             effect: (state) => { 
                 state.freezeTimer = 180; 
@@ -516,7 +529,6 @@
         'SHOTGUN': {
             text: "STAY BACK!",
             textColor: "#fbbf24", 
-            // borderColor: "#fbbf24",
             boxShadow: "none",
             overlayColor: "rgba(255, 200, 50, 0.6)", 
             overlayDuration: 100, 
@@ -528,13 +540,12 @@
         'CRITICAL': {
             text: "I NEVER MISS!",
             textColor: "#d946ef", 
-            // borderColor: "#d946ef",
             boxShadow: "none",
             overlayColor: "rgba(217, 70, 239, 0.6)", 
             overlayDuration: 800,
             effect: (state) => { 
                 state.hp = 5; 
-                state.shake = 65; 
+                state.shake = 60; 
             } 
         }
     };
@@ -775,7 +786,7 @@
         
         // 填充參數列表
         const paramDiv = document.getElementById('debug-params');
-        paramDiv.innerText = `REWARD_CONFIG = ${JSON.stringify(REWARD_CONFIG, null, 2)}\n\nBOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}`;
+        paramDiv.innerText = `REWARD_CONFIG = ${JSON.stringify(REWARD_CONFIG, null, 2)}\n\nBOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}\n\nBOSS_BEHAVIOR = ${JSON.stringify(BOSS_BEHAVIOR, null, 2)}\n\nENEMY_BEHAVIOR = ${JSON.stringify(ENEMY_BEHAVIOR, null, 2)}`;
         
         startGame();
     };
@@ -907,9 +918,20 @@
             if (this.isDying) { this.opacity -= 0.2; return this.opacity <= 0; }
             if (state.freezeTimer <= 0) {
                 if (state.bossMode && this.isBoss) {
-                    this.z += (BOSS_SPEEDS[state.difficultyMode] || 0.0008); 
+                    // BOSS 移動速度 logic (更新後)
+                    let s = (BOSS_SPEEDS[state.difficultyMode] || 0.0008);
+                    
+                    // 使用新定義的 BOSS_BEHAVIOR 參數
+                    if (this.z > BOSS_BEHAVIOR.sprintZ) s *= BOSS_BEHAVIOR.sprintMultiplier; 
+                    
+                    this.z += s; 
                 }
-                else if (!state.bossMode) this.z += this.speed;
+                else if (!state.bossMode) {
+                     let s = this.speed;
+                     // Apply sprint logic to normal enemies too
+                     if (this.z > ENEMY_BEHAVIOR.sprintZ) s *= ENEMY_BEHAVIOR.sprintMultiplier;
+                     this.z += s;
+                }
             }
             return this.z >= 1;
         }
@@ -1026,6 +1048,9 @@
         document.getElementById('boss-ui').style.opacity = '0';
         document.getElementById('perfect-badge').style.display = 'none'; 
         
+        // 強制更新 UI 以確保重置
+        updateUIPanel();
+
         // 根據 Debug 模式顯示面板
         const dbgPanel = document.getElementById('debug-panel');
         if(state.debugMode) {
@@ -1169,7 +1194,12 @@
         
         state.damageAlpha = 0.8; 
 
-        if (state.bossMode && state.enemies[0]) state.enemies[0].z = 0.4;
+        if (state.bossMode && state.enemies[0]) {
+            // 受擊退後距離 logic (更新：使用 BOSS_BEHAVIOR 配置)
+            const pushback = BOSS_BEHAVIOR.pushback[state.difficultyMode] || 0.5;
+            state.enemies[0].z = pushback; 
+        }
+        
         if (state.hp <= 0) endGame();
     }
 
