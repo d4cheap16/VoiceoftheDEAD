@@ -130,11 +130,32 @@
         }
         .banner-box img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
 
+        /* 難度選擇的 Active 樣式 (保留原樣) */
         .diff-rookie.active-diff { background: #063d19 !important; border-color: #0f0 !important; color: #0f0 !important; box-shadow: 0 0 15px rgba(0, 255, 0, 0.3); }
         .diff-veteran.active-diff { background: #002244 !important; border-color: #0af !important; color: #0af !important; box-shadow: 0 0 15px rgba(0, 170, 255, 0.3); }
         .diff-nightmare.active-diff { background: #330044 !important; border-color: #f0f !important; color: #f0f !important; box-shadow: 0 0 15px rgba(255, 0, 255, 0.3); }
         .diff-nohope.active-diff { background: #440000 !important; border-color: #f00 !important; color: #f00 !important; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
         
+        /* 新增：Book (Sector) 選擇樣式 - 檔案夾風格 (高亮白/灰) */
+        .book-btn { border: 1px solid #333; }
+        .book-active {
+            background-color: #d4d4d8 !important; /* zinc-300 */
+            color: #000 !important;
+            border-color: #fff !important;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* 新增：Lesson (Unit) 選擇樣式 - 生化數據風格 (高亮綠) */
+        .lesson-btn { border: 1px solid #333; }
+        .lesson-active {
+            background-color: #16a34a !important; /* green-600 */
+            color: #000 !important;
+            border-color: #4ade80 !important; /* green-400 */
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+        }
+
         #boss-ui {
             position: absolute; top: 15px; left: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
@@ -269,16 +290,24 @@
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
             <div class="grid grid-cols-5 gap-1 mb-6" id="book-grid"></div>
+            
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Unit Module</p>
             <div class="grid grid-cols-3 gap-1 mb-6" id="lesson-grid"></div>
-            <div id="mission-status" class="text-[7px] text-zinc-400 mb-6 h-4 uppercase tracking-tighter">System Ready</div>
+            
+            <!-- 修改：將狀態顯示改為兩層，凸顯 Unit 名稱 -->
+            <div class="bg-zinc-900 border border-zinc-800 p-2 mb-4 text-center rounded">
+                <div class="text-[6px] text-zinc-600 uppercase tracking-widest mb-1">Target Identity</div>
+                <div id="mission-target-display" class="text-sm font-bold text-green-400 uppercase tracking-wider flicker">SYSTEM READY</div>
+                <div id="mission-status-text" class="text-[6px] text-zinc-500 mt-1 uppercase">WAITING FOR INPUT...</div>
+            </div>
             
             <div id="leaderboard-preview" class="hidden bg-zinc-900/50 p-2 rounded">
                 <p class="text-[7px] text-blue-500 mb-2 uppercase text-center font-bold tracking-widest">Sector Top Survivors</p>
                 <div id="top-records-list" class="text-[8px] text-zinc-400 space-y-1 text-left px-2"></div>
             </div>
 
-            <button onclick="confirmMission()" id="confirm-mission-btn" class="btn w-full py-5 text-white bg-blue-900 border-blue-500 mt-4 uppercase" disabled>Enter Mission</button>
+            <!-- 修改：Enter Mission 按鈕顏色改為 S.T.A.R.S. 藍 (Gunmetal/Navy Blue) -->
+            <button onclick="confirmMission()" id="confirm-mission-btn" class="btn w-full py-5 text-white bg-blue-900 border-slate-500 hover:bg-blue-800 hover:border-slate-300 mt-4 uppercase shadow-lg transition-all" disabled>Enter Mission</button>
         </div>
     </div>
 
@@ -312,7 +341,7 @@
             </div>
             <div class="flex gap-2 mt-4">
                 <button onclick="backToMission()" class="btn w-1/3 text-[8px] uppercase">Back</button>
-                <button id="start-btn" onclick="handleAuth()" class="btn w-2/3 py-5 bg-red-950 border-red-700 text-red-500 uppercase">GO!</button>
+                <button id="start-btn" onclick="handleAuth()" class="btn w-2/3 py-5 bg-red-950 border-red-700 text-red-500 uppercase">Initiate</button>
             </div>
         </div>
     </div>
@@ -678,8 +707,9 @@
     }
 
     function initUI() {
+        // 修改：使用新的 active class
         document.getElementById('book-grid').innerHTML = [1,2,3,4,5].map(i => 
-            `<button onclick="selectBook(${i})" class="btn book-btn ${i===4?'active-diff':''}" id="b${i}">${['I','II','III','IV','V'][i-1]}</button>`).join('');
+            `<button onclick="selectBook(${i})" class="btn book-btn ${i===4?'book-active':''}" id="b${i}">${['I','II','III','IV','V'][i-1]}</button>`).join('');
         refreshLessonGrid();
         loadSavedProfile();
         randomizeBackground(); 
@@ -707,7 +737,8 @@
         const grid = document.getElementById('lesson-grid');
         grid.innerHTML = [1,2,3,4,5,6,7,8,9].map(i => {
             const hasData = currentBookData && currentBookData[`L${i}`];
-            const activeClass = i === selectedLesson ? 'active-diff' : '';
+            // 修改：使用新的 active class
+            const activeClass = i === selectedLesson ? 'lesson-active' : '';
             const emptyClass = !hasData ? 'btn-empty' : '';
             return `<button onclick="selectLesson(${i})" class="btn lesson-btn ${activeClass} ${emptyClass}" id="l${i}">${i}</button>`;
         }).join('');
@@ -721,21 +752,22 @@
 
     async function loadBookData(n) {
         selectedBook = n;
-        const status = document.getElementById('mission-status');
-        status.innerText = `CONNECTING ARCHIVE ${n}...`;
+        const statusText = document.getElementById('mission-status-text');
+        statusText.innerText = `CONNECTING ARCHIVE ${n}...`;
         try {
             const res = await fetch(`book${n}.json`);
             currentBookData = await res.json();
-            status.innerText = `SECTOR ${n} LINKED`;
+            statusText.innerText = `SECTOR ${n} DATA LINKED`;
             refreshLessonGrid();
             checkMissionValid();
         } catch(e) { 
-            currentBookData = {}; status.innerText = `DATA ERROR`; refreshLessonGrid(); checkMissionValid();
+            currentBookData = {}; statusText.innerText = `DATA ERROR - OFFLINE`; refreshLessonGrid(); checkMissionValid();
         }
     }
     window.selectBook = (n) => {
-        document.querySelectorAll('.book-btn').forEach(b => b.classList.remove('active-diff'));
-        document.getElementById(`b${n}`).classList.add('active-diff');
+        // 修改：使用新的 active class
+        document.querySelectorAll('.book-btn').forEach(b => b.classList.remove('book-active'));
+        document.getElementById(`b${n}`).classList.add('book-active');
         loadBookData(n);
     };
 
@@ -763,26 +795,41 @@
     window.selectLesson = (n) => {
         const data = currentBookData[`L${n}`];
         if (!data) {
-            document.getElementById('mission-status').innerText = `SECTOR ${n}: BLOCKED`;
+            document.getElementById('mission-target-display').innerText = "DATA MISSING";
+            document.getElementById('mission-target-display').classList.remove('text-green-400');
+            document.getElementById('mission-target-display').classList.add('text-red-500');
             document.getElementById('leaderboard-preview').classList.add('hidden');
             return;
         }
         selectedLesson = n;
-        document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active-diff'));
-        document.getElementById(`l${n}`).classList.add('active-diff');
+        // 修改：使用新的 active class
+        document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('lesson-active'));
+        document.getElementById(`l${n}`).classList.add('lesson-active');
         checkMissionValid();
         fetchLessonRankings(n);
     };
 
     function checkMissionValid() {
         const btn = document.getElementById('confirm-mission-btn');
+        const targetDisplay = document.getElementById('mission-target-display');
+        const statusText = document.getElementById('mission-status-text');
+        
         const data = currentBookData[`L${selectedLesson}`];
+        
+        // 重置顏色
+        targetDisplay.classList.remove('text-red-500');
+        targetDisplay.classList.add('text-green-400');
+
         if (data) {
             btn.disabled = false;
-            document.getElementById('mission-status').innerText = `TARGET: ${data.title.toUpperCase()}`;
+            targetDisplay.innerText = data.title.toUpperCase();
+            statusText.innerText = "READY TO ENGAGE";
         } else { 
             btn.disabled = true;
-            document.getElementById('mission-status').innerText = "SECTOR CORRUPTED";
+            targetDisplay.innerText = "SECTOR CORRUPTED";
+            targetDisplay.classList.remove('text-green-400');
+            targetDisplay.classList.add('text-red-500');
+            statusText.innerText = "INVALID TARGET";
         }
     }
     loadBookData(4);
