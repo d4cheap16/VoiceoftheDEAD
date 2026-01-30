@@ -31,27 +31,12 @@
             user-select: none; touch-action: manipulation;
         }
 
-        /* 自定義復古卷軸樣式 - 修改為更細緻、深沈的風格 */
-        ::-webkit-scrollbar {
-            width: 6px; /* 變細 */
-            background: #050505;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333; 
-            border: none;
-            border-radius: 2px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        /* Firefox 支援 */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: #333 #000;
-        }
+        /* 自定義復古卷軸樣式 */
+        ::-webkit-scrollbar { width: 6px; background: #050505; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        * { scrollbar-width: thin; scrollbar-color: #333 #000; }
 
         .crt::before {
             content: " ";
@@ -117,15 +102,9 @@
         }
         select:focus, input:focus { border-color: #0f0 !important; }
 
-        /* 隱藏數字輸入框的上下箭頭 */
         input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] {
-            -moz-appearance: textfield; 
-        }
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
         .btn {
             background: #111; border: 1px solid #444; color: #ccc;
@@ -152,29 +131,22 @@
         }
         .banner-box img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
 
-        /* 難度選擇的 Active 樣式 (保留原樣) */
         .diff-rookie.active-diff { background: #063d19 !important; border-color: #0f0 !important; color: #0f0 !important; box-shadow: 0 0 15px rgba(0, 255, 0, 0.3); }
         .diff-veteran.active-diff { background: #002244 !important; border-color: #0af !important; color: #0af !important; box-shadow: 0 0 15px rgba(0, 170, 255, 0.3); }
         .diff-nightmare.active-diff { background: #330044 !important; border-color: #f0f !important; color: #f0f !important; box-shadow: 0 0 15px rgba(255, 0, 255, 0.3); }
         .diff-nohope.active-diff { background: #440000 !important; border-color: #f00 !important; color: #f00 !important; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
         
-        /* 新增：Book (Sector) 選擇樣式 - 檔案夾風格 (高亮白/灰) */
         .book-btn { border: 1px solid #333; }
         .book-active {
-            background-color: #d4d4d8 !important; /* zinc-300 */
-            color: #000 !important;
-            border-color: #fff !important;
-            font-weight: bold;
+            background-color: #d4d4d8 !important; color: #000 !important;
+            border-color: #fff !important; font-weight: bold;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
-        /* 新增：Lesson (Unit) 選擇樣式 - 生化數據風格 (高亮綠) */
         .lesson-btn { border: 1px solid #333; }
         .lesson-active {
-            background-color: #16a34a !important; /* green-600 */
-            color: #000 !important;
-            border-color: #4ade80 !important; /* green-400 */
-            font-weight: bold;
+            background-color: #16a34a !important; color: #000 !important;
+            border-color: #4ade80 !important; font-weight: bold;
             box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
         }
 
@@ -186,24 +158,13 @@
         }
         .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
 
-        /* 獎勵提示樣式：大字體風格 */
         #reward-toast {
-            position: absolute; 
-            top: 25%; 
-            width: 100%; 
-            text-align: center;
-            pointer-events: none; 
-            z-index: 250; 
-            transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0; 
-            transform: scale(0.5);
-            font-size: 30px; 
-            font-weight: 700;
-            color: #fff; 
-            text-shadow: 0 0 15px currentColor; 
-            font-family: 'Press Start 2P', cursive;
-            line-height: 1.5;
-            padding: 0 10px;
+            position: absolute; top: 25%; width: 100%; text-align: center;
+            pointer-events: none; z-index: 250; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: scale(0.5);
+            font-size: 30px; font-weight: 700; color: #fff; 
+            text-shadow: 0 0 15px currentColor; font-family: 'Press Start 2P', cursive;
+            line-height: 1.5; padding: 0 10px;
         }
         .toast-active { opacity: 1; transform: scale(1); }
 
@@ -217,83 +178,47 @@
         #leaderboard-preview { width: 100%; margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
 
         @keyframes flicker { 
-            0% { opacity: 1; } 
-            25% { opacity: 0.8; }
-            50% { opacity: 1; }
-            75% { opacity: 0.6; }
-            100% { opacity: 1; }
+            0% { opacity: 1; } 25% { opacity: 0.8; } 50% { opacity: 1; } 75% { opacity: 0.6; } 100% { opacity: 1; }
         }
         .flicker { animation: flicker 0.15s infinite; }
         
-        /* 完美通關特效 */
         @keyframes shine { 
             0% { transform: scale(1); text-shadow: 0 0 10px gold; } 
             50% { transform: scale(1.1); text-shadow: 0 0 30px yellow, 0 0 50px orange; } 
             100% { transform: scale(1); text-shadow: 0 0 10px gold; } 
         }
         .perfect-badge {
-            color: #FFD700;
-            animation: shine 1.5s infinite ease-in-out;
-            border: 2px solid #FFD700;
-            padding: 10px;
-            border-radius: 8px;
-            background: rgba(255, 215, 0, 0.1);
-            margin-bottom: 20px;
-            display: none; /* 預設隱藏 */
+            color: #FFD700; animation: shine 1.5s infinite ease-in-out;
+            border: 2px solid #FFD700; padding: 10px; border-radius: 8px;
+            background: rgba(255, 215, 0, 0.1); margin-bottom: 20px; display: none;
         }
 
-        /* Debug Panel 樣式 (靠右對齊，避免遮擋) */
         #debug-panel {
             position: absolute; top: 0; right: 0; width: 100%; height: 100%;
-            background: transparent; pointer-events: none; z-index: 300;
-            padding: 10px;
+            background: transparent; pointer-events: none; z-index: 300; padding: 10px;
         }
         .debug-controls {
-            pointer-events: auto;
-            background: rgba(0,0,0,0.8);
-            border: 1px solid #0f0;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 200px;
-            margin-top: 40px;
-            font-size: 8px;
-            color: #0f0;
+            pointer-events: auto; background: rgba(0,0,0,0.8); border: 1px solid #0f0;
+            padding: 10px; border-radius: 8px; max-width: 200px;
+            margin-top: 40px; font-size: 8px; color: #0f0;
         }
         .debug-btn {
             background: #003300; border: 1px solid #0f0; color: #0f0;
-            padding: 5px; margin: 2px 0; width: 100%; cursor: pointer;
-            text-align: left;
+            padding: 5px; margin: 2px 0; width: 100%; cursor: pointer; text-align: left;
         }
         .debug-btn:hover { background: #005500; }
         .debug-info { font-family: monospace; white-space: pre-wrap; margin-top: 10px; color: #aaa; font-size: 7px; max-height: 200px; overflow-y: auto;}
 
-        /* 心電圖動畫 */
         .ecg-container {
-            width: 100%; height: 30px;
-            background: #000;
-            border: 1px solid #222;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            border-radius: 4px;
+            width: 100%; height: 30px; background: #000; border: 1px solid #222;
+            position: relative; overflow: hidden; display: flex; align-items: center; border-radius: 4px;
         }
-        .ecg-svg {
-            width: 100%;
-            height: 100%;
-        }
+        .ecg-svg { width: 100%; height: 100%; }
         .ecg-line {
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke-dasharray: 200;
-            stroke-dashoffset: 200;
-            animation: dash 2s linear infinite;
+            fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+            stroke-dasharray: 200; stroke-dashoffset: 200; animation: dash 2s linear infinite;
         }
-        @keyframes dash {
-            to { stroke-dashoffset: 0; }
-        }
+        @keyframes dash { to { stroke-dashoffset: 0; } }
     </style>
 </head>
 <body class="crt">
@@ -302,10 +227,8 @@
     <div id="flash-overlay" class="absolute inset-0 bg-white opacity-0 pointer-events-none z-[120]"></div>
     <div id="reward-toast" class="pixel-font">REWARD LOADED</div>
 
-    <!-- 1. 任務選擇 -->
     <div id="mission-screen" class="overlay-screen">
         <div class="banner-box">
-            <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
             <img src="https://d4cheap16.github.io/tddt/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
         </div>
         <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Dead Don't Talk</h1>
@@ -316,7 +239,6 @@
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Unit Module</p>
             <div class="grid grid-cols-3 gap-1 mb-6" id="lesson-grid"></div>
             
-            <!-- 修改：移除多餘標籤，只保留 Unit 名稱，並移除 flicker -->
             <div class="bg-zinc-900 border border-zinc-800 p-4 mb-4 text-center rounded">
                 <div id="mission-target-display" class="text-sm font-bold text-green-400 uppercase tracking-wider">SYSTEM READY</div>
             </div>
@@ -326,15 +248,12 @@
                 <div id="top-records-list" class="text-[8px] text-zinc-400 space-y-1 text-left px-2"></div>
             </div>
 
-            <!-- 修改：Enter Mission 按鈕顏色改為 S.T.A.R.S. 藍 (Gunmetal/Navy Blue) -->
             <button onclick="confirmMission()" id="confirm-mission-btn" class="btn w-full py-5 text-white bg-blue-900 border-slate-500 hover:bg-blue-800 hover:border-slate-300 mt-4 uppercase shadow-lg transition-all" disabled>Enter Mission</button>
         </div>
     </div>
 
-    <!-- 2. 登錄與難度 -->
     <div id="login-screen" class="overlay-screen hidden">
         <div class="banner-box">
-            <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
             <img src="https://d4cheap16.github.io/tddt/missionbanner.png" alt="Mission Banner" onerror="this.style.display='none'">
         </div>
         <h2 id="selected-mission-title" class="text-blue-500 mb-6 text-[11px] uppercase tracking-widest">MISSION ID</h2>
@@ -352,7 +271,6 @@
             <input type="number" id="input-no" placeholder="NUMBER" class="input-retro">
             <input type="text" id="input-name" placeholder="NAME" class="input-retro">
             <p class="text-[8px] text-zinc-600 mt-4 mb-1 uppercase px-1">Challenge Level</p>
-            <!-- 難度按鈕：移除括號文字 -->
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn diff-rookie" id="diff-rookie">Rookie</button>
                 <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn diff-veteran active-diff" id="diff-veteran">Veteran</button>
@@ -366,7 +284,6 @@
         </div>
     </div>
 
-    <!-- 管理員選擇畫面 -->
     <div id="admin-choice-screen" class="overlay-screen hidden">
         <h2 class="text-blue-600 mb-6 uppercase text-[14px]">System Access Granted</h2>
         <div class="flex flex-col gap-4 w-full max-w-xs">
@@ -376,28 +293,23 @@
         </div>
     </div>
 
-    <!-- 管理員終端 (排行榜) - 修改為詳細報表模式 -->
     <div id="admin-screen" class="overlay-screen hidden">
         <h2 class="text-blue-600 mb-4 uppercase">Archive Terminal</h2>
         <div class="admin-table-container">
             <table class="w-full text-left">
                 <thead class="bg-zinc-900 sticky top-0">
-                    <!-- 修改：欄位調整 -->
                     <tr><th>USER</th><th class="text-center">MSN</th><th>RESULT</th><th class="text-right">TIME</th></tr>
                 </thead>
                 <tbody id="records-body" class="text-zinc-300"></tbody>
             </table>
         </div>
         <div class="grid grid-cols-2 gap-2 w-full max-w-sm mt-6">
-             <!-- 新增：匯出功能 -->
             <button onclick="exportToCSV()" class="btn py-4 bg-blue-900 border-blue-600 text-white uppercase col-span-2">Export CSV Data</button>
-            
             <button onclick="handleClearData()" id="clear-data-btn" class="btn py-4 bg-red-950 border-red-700 text-red-500 uppercase">Clear All</button>
             <button onclick="location.reload()" class="btn py-4 bg-zinc-900 uppercase">Logout</button>
         </div>
     </div>
 
-    <!-- Debug 面板 (遊戲中顯示) -->
     <div id="debug-panel" class="hidden flex-col items-end justify-start">
         <div class="debug-controls">
             <div class="text-[10px] mb-2 font-bold uppercase text-center border-b border-green-500 pb-1">Debug Controls</div>
@@ -406,15 +318,12 @@
             <button onclick="debugTrigger('SHOTGUN')" class="debug-btn">3. Trigger Shotgun (Push)</button>
             <button onclick="debugCritical()" class="debug-btn text-purple-400 border-purple-500">4. Trigger Critical (Wipe)</button>
             <button onclick="startBossBattle()" class="debug-btn text-red-400 border-red-500">5. Spawn BOSS</button>
-            
             <button onclick="exitDebugMode()" class="debug-btn bg-red-900 border-red-500 text-white mt-4 font-bold text-center hover:bg-red-700">EXIT TEST (RELOAD)</button>
-
             <div class="mt-2 text-[7px] text-zinc-400">PARAMETERS:</div>
             <div id="debug-params" class="debug-info"></div>
         </div>
     </div>
 
-    <!-- 暫停練習畫面 -->
     <div id="pause-screen" class="overlay-screen hidden">
         <h2 class="text-zinc-500 text-[10px] mb-8 uppercase tracking-widest">Training Mode (Paused)</h2>
         <div class="bg-zinc-900 border border-zinc-700 p-8 rounded-lg w-full max-w-xs mb-8 text-center">
@@ -426,7 +335,6 @@
         <p class="text-[7px] text-zinc-700">Practice your pronunciation here.</p>
     </div>
 
-    <!-- BOSS UI -->
     <div id="boss-ui" class="px-5 w-full">
         <div class="w-full bg-zinc-900 h-3 border-2 border-white mb-2 overflow-hidden rounded-full">
             <div id="boss-hp-bar" class="h-full bg-red-600 transition-all duration-300" style="width: 100%"></div>
@@ -434,7 +342,6 @@
         <div id="boss-sentence" class="flex flex-wrap justify-center gap-2 text-[10px] bg-black/90 p-4 border border-red-900 rounded-lg shadow-xl"></div>
     </div>
 
-    <!-- 結算畫面 -->
     <div id="win-screen" class="overlay-screen hidden">
         <h1 class="text-green-500 text-2xl mb-4 flicker uppercase">Mission Complete</h1>
         <div id="perfect-badge" class="perfect-badge">
@@ -449,7 +356,6 @@
         </div>
     </div>
 
-    <!-- 死亡畫面 -->
     <div id="game-over-screen" class="overlay-screen hidden">
         <h1 class="text-red-700 text-2xl mb-6 flicker uppercase">You are dead</h1>
         <p id="fail-score-display" class="text-yellow-500 text-5xl mb-4 uppercase">0</p>
@@ -464,9 +370,7 @@
         <canvas id="game-canvas"></canvas>
     </div>
 
-    <!-- 主 UI 面板 -->
     <div class="ui-panel">
-        <!-- 狀態與心電圖 -->
         <div class="grid grid-cols-[30%_70%] gap-2 items-center border-b border-zinc-800 pb-2">
             <div>
                 <div id="score-display" class="text-[18px] text-yellow-400 pixel-font mt-1 tracking-widest font-bold" style="text-shadow: 0 0 5px orange;">00000</div>
@@ -519,8 +423,6 @@
 
 <script>
     const ADMIN_KEY = "AdaWong";
-    
-    // 背景圖清單 - 修改路徑
     const BGS = [
         "https://d4cheap16.github.io/tddt/BG01.png",
         "https://d4cheap16.github.io/tddt/BG02.png",
@@ -530,33 +432,10 @@
     ];
 
     const BOSS_QUOTAS = { 'Rookie': 1, 'Veteran': 2, 'Nightmare': 3, 'NoHope': 5 };
-
-    // 提高 Boss 基礎速度
-    const BOSS_SPEEDS = {
-        'Rookie': 0.0008,    
-        'Veteran': 0.0012,   
-        'Nightmare': 0.0018, 
-        'NoHope': 0.0025     
-    };
-
-    // 新增：一般敵人行為參數 (控制最後衝刺)
-    const ENEMY_BEHAVIOR = {
-        sprintZ: 0.75,       // 當距離 > 0.75 時開始衝刺
-        sprintMultiplier: 1.4 // 速度提升 1.5 倍
-    };
-
-    const BOSS_BEHAVIOR = {
-        sprintZ: 0.4, 
-        sprintMultiplier: 2.0, 
-        pushback: {
-            'Rookie': 0.5,    
-            'Veteran': 0.6,   
-            'Nightmare': 0.7, 
-            'NoHope': 0.8     
-        }
-    };
+    const BOSS_SPEEDS = { 'Rookie': 0.0008, 'Veteran': 0.0012, 'Nightmare': 0.0018, 'NoHope': 0.0025 };
+    const ENEMY_BEHAVIOR = { sprintZ: 0.75, sprintMultiplier: 1.4 };
+    const BOSS_BEHAVIOR = { sprintZ: 0.4, sprintMultiplier: 2.0, pushback: { 'Rookie': 0.5, 'Veteran': 0.6, 'Nightmare': 0.7, 'NoHope': 0.8 } };
     
-    // 更新：BOSS 戰鬥配置表 (參數依照難度獨立)
     const BOSS_BATTLE_CONFIG = {
         'Rookie':    { criticalChance: 0.05, stunDuration: 50, pushback: 0.6, scoreMult: 2.0 },
         'Veteran':   { criticalChance: 0.04, stunDuration: 40, pushback: 0.5, scoreMult: 2.0 },
@@ -571,100 +450,45 @@
         'NoHope':   { min: 0.0020, max: 0.0030 }
     };
     
-    // --- 遊戲平衡設定表 (GAME_BALANCE) ---
-    // 修改：將 COMBO 與 SURVIVAL 拆分為依照難度設定
     const GAME_BALANCE = {
-        // 生成頻率 (毫秒) - 越低越快
-        SPAWN_RATES: { 
-            'Rookie': 2500, 
-            'Veteran': 2200, 
-            'Nightmare': 1800, 
-            'NoHope': 1500 
-        },
-        
-        // Combo 與分數系統 (Per Difficulty)
+        SPAWN_RATES: { 'Rookie': 2500, 'Veteran': 2200, 'Nightmare': 1800, 'NoHope': 1500 },
         COMBO: {
             'Rookie':    { rewardThreshold: 5, criticalChance: 0.05, baseScore: 100, comboMultiplier: 10 },
             'Veteran':   { rewardThreshold: 7, criticalChance: 0.04, baseScore: 150, comboMultiplier: 15 },
             'Nightmare': { rewardThreshold: 10, criticalChance: 0.03, baseScore: 200, comboMultiplier: 20 },
             'NoHope':    { rewardThreshold: 15, criticalChance: 0.01, baseScore: 300, comboMultiplier: 30 }
         },
-        
-        // 生存數值 (Per Difficulty)
         SURVIVAL: {
-            'Rookie':    { maxHP: 6, damageShake: 20 }, // Rookie 血量較多
+            'Rookie':    { maxHP: 6, damageShake: 20 },
             'Veteran':   { maxHP: 5, damageShake: 35 },
             'Nightmare': { maxHP: 4, damageShake: 45 },
-            'NoHope':    { maxHP: 3, damageShake: 60 }  // No Hope 一擊必殺
+            'NoHope':    { maxHP: 3, damageShake: 60 }
         },
-
-        // 距離判定
-        DISTANCE_THRESHOLDS: {
-            deathZ: 1.0,           // 敵人撞擊玩家的距離
-            bossShakeZ: 0.4        // Boss 引起畫面震動的距離
-        }
+        DISTANCE_THRESHOLDS: { deathZ: 1.0, bossShakeZ: 0.4 }
     };
 
     const REWARD_CONFIG = {
         'RECOVER': {
-            text: "RECOVER!",
-            textColor: "#6ee7b7", 
-            borderColor: "#6ee7b7",
-            boxShadow: "none", 
-            overlayColor: "rgba(110, 231, 183, 0.4)", 
-            overlayDuration: 600, 
-            // 修改：使用當前難度的 maxHP
-            effect: (state) => { 
-                const maxHP = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP;
-                state.hp = Math.min(maxHP, state.hp + 1); 
-            }
+            text: "RECOVER!", textColor: "#6ee7b7", borderColor: "#6ee7b7", boxShadow: "none", 
+            overlayColor: "rgba(110, 231, 183, 0.4)", overlayDuration: 600, 
+            effect: (state) => { const maxHP = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP; state.hp = Math.min(maxHP, state.hp + 1); }
         },
         'FLASH': {
-            text: "PRESENT FOR YOU!",
-            textColor: "#67e8f9", 
-            boxShadow: "none",
-            overlayColor: "rgba(255, 255, 255, 0.4)", 
-            overlayDuration: 1500, 
-            effect: (state) => { 
-                state.freezeTimer = 180; 
-                state.shake = 50; 
-            } 
+            text: "PRESENT FOR YOU!", textColor: "#67e8f9", boxShadow: "none", overlayColor: "rgba(255, 255, 255, 0.4)", overlayDuration: 1500, 
+            effect: (state) => { state.freezeTimer = 180; state.shake = 50; } 
         },
         'SHOTGUN': {
-            text: "STAY BACK!",
-            textColor: "#fbbf24", 
-            boxShadow: "none",
-            overlayColor: "rgba(255, 200, 50, 0.6)", 
-            overlayDuration: 100, 
-            effect: (state) => {
-                state.enemies.forEach(e => { if (!e.isDying) e.z = Math.max(0, e.z - 0.4); });
-                state.shake = 60; state.freezeTimer = 60; 
-            }
+            text: "STAY BACK!", textColor: "#fbbf24", boxShadow: "none", overlayColor: "rgba(255, 200, 50, 0.6)", overlayDuration: 100, 
+            effect: (state) => { state.enemies.forEach(e => { if (!e.isDying) e.z = Math.max(0, e.z - 0.4); }); state.shake = 60; state.freezeTimer = 60; }
         },
         'CRITICAL': {
-            text: "I NEVER MISS!",
-            textColor: "#d946ef", 
-            boxShadow: "none",
-            overlayColor: "rgba(217, 70, 239, 0.6)", 
-            overlayDuration: 800,
-            // 修改：使用當前難度的 maxHP
-            effect: (state) => { 
-                const maxHP = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP;
-                state.hp = maxHP; 
-                state.shake = 60; 
-            } 
+            text: "I NEVER MISS!", textColor: "#d946ef", boxShadow: "none", overlayColor: "rgba(217, 70, 239, 0.6)", overlayDuration: 800,
+            effect: (state) => { const maxHP = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP; state.hp = maxHP; state.shake = 60; } 
         }
     };
     
-    // 進入 BOSS 戰所需的殺敵數 (累積殺敵達到此數值時召喚 BOSS)
-    const BOSS_TRIGGER_KILLS = {
-        'Rookie': 10,    
-        'Veteran': 15,   
-        'Nightmare': 20, 
-        'NoHope': 30     
-    };
+    const BOSS_TRIGGER_KILLS = { 'Rookie': 10, 'Veteran': 15, 'Nightmare': 20, 'NoHope': 30 };
 
-    // --- 8-bit 音效系統 ---
     const sfx = {
         ctx: null,
         init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
@@ -685,15 +509,10 @@
         },
         kill() { this.play(440, 'square', 0.1, 0.05); },
         damage() { this.play(120, 'sawtooth', 0.3, 0.15); },
-        reward() {
-            this.play(660, 'sine', 0.4, 0.05);
-            setTimeout(() => this.play(880, 'sine', 0.4, 0.05), 100);
-        },
-        perfect() { // 完美通關音效
-             this.play(523.25, 'sine', 0.1, 0.2); // C5
-             setTimeout(() => this.play(659.25, 'sine', 0.1, 0.2), 100); // E5
-             setTimeout(() => this.play(783.99, 'sine', 0.2, 0.2), 200); // G5
-             setTimeout(() => this.play(1046.50, 'sine', 0.4, 0.2), 300); // C6
+        reward() { this.play(660, 'sine', 0.4, 0.05); setTimeout(() => this.play(880, 'sine', 0.4, 0.05), 100); },
+        perfect() { 
+             this.play(523.25, 'sine', 0.1, 0.2); setTimeout(() => this.play(659.25, 'sine', 0.1, 0.2), 100); 
+             setTimeout(() => this.play(783.99, 'sine', 0.2, 0.2), 200); setTimeout(() => this.play(1046.50, 'sine', 0.4, 0.2), 300); 
         },
         boss() { this.play(80, 'triangle', 0.8, 0.2, false); }
     };
@@ -728,14 +547,10 @@
     }
     
     function preloadImages() {
-        BGS.forEach(src => {
-            const img = new Image();
-            img.src = src;
-        });
+        BGS.forEach(src => { const img = new Image(); img.src = src; });
     }
 
     function initUI() {
-        // 修改：使用新的 active class
         document.getElementById('book-grid').innerHTML = [1,2,3,4,5].map(i => 
             `<button onclick="selectBook(${i})" class="btn book-btn ${i===4?'book-active':''}" id="b${i}">${['I','II','III','IV','V'][i-1]}</button>`).join('');
         refreshLessonGrid();
@@ -765,7 +580,6 @@
         const grid = document.getElementById('lesson-grid');
         grid.innerHTML = [1,2,3,4,5,6,7,8,9].map(i => {
             const hasData = currentBookData && currentBookData[`L${i}`];
-            // 修改：使用新的 active class
             const activeClass = i === selectedLesson ? 'lesson-active' : '';
             const emptyClass = !hasData ? 'btn-empty' : '';
             return `<button onclick="selectLesson(${i})" class="btn lesson-btn ${activeClass} ${emptyClass}" id="l${i}">${i}</button>`;
@@ -780,21 +594,16 @@
 
     async function loadBookData(n) {
         selectedBook = n;
-        // 移除對 mission-status-text 的更新
         try {
             const res = await fetch(`book${n}.json`);
             currentBookData = await res.json();
-            // Status text removed
             refreshLessonGrid();
             checkMissionValid();
         } catch(e) { 
-            currentBookData = {}; 
-            // Status text removed
-            refreshLessonGrid(); checkMissionValid();
+            currentBookData = {}; refreshLessonGrid(); checkMissionValid();
         }
     }
     window.selectBook = (n) => {
-        // 修改：使用新的 active class
         document.querySelectorAll('.book-btn').forEach(b => b.classList.remove('book-active'));
         document.getElementById(`b${n}`).classList.add('book-active');
         loadBookData(n);
@@ -826,14 +635,13 @@
         const targetDisplay = document.getElementById('mission-target-display');
         
         if (!data) {
-            targetDisplay.innerText = "BLOCKED"; // 修改文字
+            targetDisplay.innerText = "BLOCKED"; 
             targetDisplay.classList.remove('text-green-400');
             targetDisplay.classList.add('text-red-500');
             document.getElementById('leaderboard-preview').classList.add('hidden');
             return;
         }
         selectedLesson = n;
-        // 修改：使用新的 active class
         document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('lesson-active'));
         document.getElementById(`l${n}`).classList.add('lesson-active');
         checkMissionValid();
@@ -845,8 +653,6 @@
         const targetDisplay = document.getElementById('mission-target-display');
         
         const data = currentBookData[`L${selectedLesson}`];
-        
-        // 重置顏色
         targetDisplay.classList.remove('text-red-500');
         targetDisplay.classList.add('text-green-400');
 
@@ -855,7 +661,7 @@
             targetDisplay.innerText = data.title.toUpperCase();
         } else { 
             btn.disabled = true;
-            targetDisplay.innerText = "BLOCKED"; // 修改文字
+            targetDisplay.innerText = "BLOCKED"; 
             targetDisplay.classList.remove('text-green-400');
             targetDisplay.classList.add('text-red-500');
         }
@@ -874,7 +680,6 @@
 
     window.handleAuth = async () => {
         const nameInput = document.getElementById('input-name').value.trim();
-        // 修改：如果輸入 Admin Key，顯示選擇畫面
         if(nameInput === ADMIN_KEY) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('admin-choice-screen').classList.remove('hidden');
@@ -890,7 +695,6 @@
         startGame();
     };
 
-    // 儲存全域資料以便匯出
     let cachedAdminData = [];
 
     async function showAdmin() {
@@ -908,36 +712,22 @@
                 const data = d.data();
                 if (data.name !== ADMIN_KEY) res.push(data);
             });
-            // 排序：日期新到舊，或者分數高到低。這邊使用班級排序方便點名，也可以改成時間
-            // res.sort((a,b) => a.class.localeCompare(b.class) || a.no - b.no);
-            
-            // 改為時間倒序 (最新的在上面)，比較符合查看 Log 的習慣
             res.sort((a, b) => {
                 const timeA = a.timestamp ? a.timestamp.seconds : 0;
                 const timeB = b.timestamp ? b.timestamp.seconds : 0;
                 return timeB - timeA;
             });
-            
-            cachedAdminData = res; // 存起來給 Export 用
+            cachedAdminData = res; 
 
             body.innerHTML = res.map(d => {
-                // 處理時間戳記
                 let timeStr = "";
                 let dateStr = "N/A";
                 if (d.timestamp && d.timestamp.seconds) {
                     const date = new Date(d.timestamp.seconds * 1000);
-                    // 格式 MM/DD
                     dateStr = `${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getDate().toString().padStart(2,'0')}`;
-                    // 格式 HH:mm
                     timeStr = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
                 }
-
-                // 處理任務 ID
                 const missionStr = `B${d.book || '?'}-L${d.lesson || '?'}`;
-                
-                // 處理難度簡寫
-                const diffShort = d.difficulty ? d.difficulty.substring(0, 3).toUpperCase() : '-';
-
                 return `
                 <tr>
                     <td class="align-top">
@@ -961,13 +751,8 @@
         }
     }
     
-    // 新增：匯出 CSV 功能
     window.exportToCSV = () => {
-        if (!cachedAdminData || cachedAdminData.length === 0) {
-            alert("No data to export");
-            return;
-        }
-
+        if (!cachedAdminData || cachedAdminData.length === 0) { alert("No data to export"); return; }
         const headers = ["Class", "No", "Name", "Score", "Difficulty", "Book", "Lesson", "Date", "Time"];
         const rows = cachedAdminData.map(d => {
             let dateStr = "", timeStr = "";
@@ -976,21 +761,9 @@
                 dateStr = `${date.getFullYear()}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getDate().toString().padStart(2,'0')}`;
                 timeStr = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
             }
-            // 避免 CSV 注入或格式跑掉，簡單處理字串
             const safeName = d.name.replace(/,/g, " "); 
-            return [
-                d.class, 
-                d.no, 
-                safeName, 
-                d.score, 
-                d.difficulty, 
-                d.book, 
-                d.lesson, 
-                dateStr, 
-                timeStr
-            ].join(",");
+            return [d.class, d.no, safeName, d.score, d.difficulty, d.book, d.lesson, dateStr, timeStr].join(",");
         });
-
         const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -1001,77 +774,43 @@
         document.body.removeChild(link);
     };
 
-    // 新增：進入 Debug 模式
     window.enterDebugMode = () => {
         document.getElementById('admin-choice-screen').classList.add('hidden');
         state.debugMode = true;
-        // 設定假玩家資訊
         state.player = { name: "TEST_UNIT", no: "00", class: "DEBUG" };
-        
-        // 填充參數列表
-        const paramDiv = document.getElementById('debug-params');
-        // paramDiv.innerText = ...;
-        
         startGame();
     };
 
-    // 新增：退出 Debug 模式 (強制重整)
     window.exitDebugMode = () => {
         document.getElementById('debug-panel').classList.add('hidden');
         location.reload();
     };
 
-    // 新增：觸發獎勵的通用函式 (內部使用)
     function executeReward(key) {
         const conf = REWARD_CONFIG[key];
         if (!conf) return;
-
         sfx.reward();
         const toast = document.getElementById('reward-toast');
         const overlay = document.getElementById('flash-overlay');
-
-        // 設定文字與樣式
         toast.innerText = conf.text;
         toast.style.color = conf.textColor;
-        // 移除邊框設定，因為 CSS 已改為文字為主
         toast.style.borderColor = 'transparent'; 
         toast.style.boxShadow = 'none';
-        toast.style.textShadow = `0 0 20px ${conf.textColor}`; // 使用配置的顏色作為光暈
+        toast.style.textShadow = `0 0 20px ${conf.textColor}`; 
         toast.classList.add('toast-active');
-        toast.classList.add('flicker'); // 加入閃爍動畫
-
-        // 設定全螢幕閃光
+        toast.classList.add('flicker'); 
         overlay.style.transition = `opacity ${conf.overlayDuration < 500 ? '0.1s' : '0.5s'} ease-out`;
         overlay.style.backgroundColor = conf.overlayColor;
         overlay.style.opacity = key === 'FLASH' ? "1" : "0.8"; 
-
-        // 執行實際遊戲邏輯效果
         if (conf.effect) conf.effect(state);
-
-        // 淡出 Overlay
+        setTimeout(() => { overlay.style.opacity = "0"; }, key === 'SHOTGUN' ? 100 : (key === 'FLASH' ? 1500 : 600)); 
         setTimeout(() => {
-            overlay.style.opacity = "0";
-        }, key === 'SHOTGUN' ? 100 : (key === 'FLASH' ? 1500 : 600)); 
-
-        // 淡出 Toast 並重置
-        setTimeout(() => {
-            toast.classList.remove('toast-active');
-            toast.classList.remove('flicker');
-            // 延遲重置樣式，避免閃爍
-            setTimeout(() => {
-                toast.style.color = '#fff';
-                toast.style.textShadow = '0 0 10px #000';
-                overlay.style.backgroundColor = 'white';
-            }, 500);
+            toast.classList.remove('toast-active'); toast.classList.remove('flicker');
+            setTimeout(() => { toast.style.color = '#fff'; toast.style.textShadow = '0 0 10px #000'; overlay.style.backgroundColor = 'white'; }, 500);
         }, 2000);
     }
 
-    // 修改：Debug 觸發一般獎勵 (改用 key)
-    window.debugTrigger = (key) => {
-        executeReward(key);
-    };
-
-    // 修改：Debug 觸發爆擊
+    window.debugTrigger = (key) => { executeReward(key); };
     window.debugCritical = () => { triggerCriticalWipe(); };
 
     window.handleClearData = async () => {
@@ -1142,17 +881,12 @@
             if (this.isDying) { this.opacity -= 0.2; return this.opacity <= 0; }
             if (state.freezeTimer <= 0) {
                 if (state.bossMode && this.isBoss) {
-                    // BOSS 移動速度 logic (更新後)
                     let s = (BOSS_SPEEDS[state.difficultyMode] || 0.0008);
-                    
-                    // 使用新定義的 BOSS_BEHAVIOR 參數
                     if (this.z > BOSS_BEHAVIOR.sprintZ) s *= BOSS_BEHAVIOR.sprintMultiplier; 
-                    
                     this.z += s; 
                 }
                 else if (!state.bossMode) {
                      let s = this.speed;
-                     // Apply sprint logic to normal enemies too (Updated to use ENEMY_BEHAVIOR)
                      if (this.z > ENEMY_BEHAVIOR.sprintZ) s *= ENEMY_BEHAVIOR.sprintMultiplier;
                      this.z += s;
                 }
@@ -1160,49 +894,252 @@
             return this.z >= GAME_BALANCE.DISTANCE_THRESHOLDS.deathZ;
         }
         draw(ctx, w, h, isClosest) {
-            const scale = this.isBoss ? 2.5 : 1.0;
-            const size = Math.min(w * 0.55, (15 + Math.pow(this.z, 2) * 280) * scale);
             const wobbleX = Math.sin(Date.now() * 0.004 + this.wobbleSeed) * 10 * this.z;
-            
             const walkBounce = Math.abs(Math.sin(Date.now() * 0.008 + this.wobbleSeed)) * 20 * this.z;
-
             const screenX = w/2 + (this.x * this.z) + wobbleX;
             const screenY = h/2 + (this.y * this.z) + (this.z * h * 0.4) - walkBounce;
-            
+
+            if (this.isBoss) {
+                const drawRect = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x, y, w, h); };
+                const drawRot = (x, y, w, h, density, c1, c2, baseS) => {
+                    for(let i=0; i<density; i++) {
+                        ctx.fillStyle = Math.random()>0.5 ? (c1||"#000") : (c2||"#300");
+                        const s = baseS * 0.02;
+                        ctx.fillRect(x + Math.random()*w, y + Math.random()*h, s, s);
+                    }
+                };
+                const vibrate = (mag, size) => (Math.random() - 0.5) * size * mag;
+
+                ctx.save();
+                ctx.translate(screenX, screenY);
+                ctx.globalAlpha = this.opacity;
+
+                if (state.difficultyMode === 'Rookie') {
+                    // --- ROOKIE: SUBJECT 57 ---
+                    const scale = 2.2; 
+                    const size = Math.min(w * 0.65, (20 + Math.pow(this.z, 2) * 320) * scale);
+                    // 額外動畫計算
+                    const twitch = (Math.random() - 0.5) * size * 0.02;
+                    ctx.translate(twitch, 0); // 抽搐
+
+                    const PALETTE = { skin: "#b0c4de", shadow: "#6c7a89", gown: "#4a6fa5", gShadow: "#2c3e50", strap: "#dcdcdc", sShadow: "#999", metal: "#555" };
+                    
+                    // 飄帶函式
+                    const drawStrap = (x, y, len, wid, offset) => {
+                        const segs=5, segLen=len/segs; let cX=x, cY=y;
+                        ctx.fillStyle = PALETTE.strap;
+                        for(let i=0; i<segs; i++) {
+                            const wav = Math.sin(Date.now()*0.005+offset+i*0.5)*(i*size*0.05);
+                            const nX=cX+wav, nY=cY+segLen;
+                            ctx.beginPath(); ctx.moveTo(cX-wid/2,cY); ctx.lineTo(cX+wid/2,cY); ctx.lineTo(nX+wid/2,nY); ctx.lineTo(nX-wid/2,nY); ctx.fill();
+                            ctx.fillStyle = PALETTE.sShadow; ctx.fillRect(cX-wid/4, cY, wid/2, segLen); ctx.fillStyle = PALETTE.strap;
+                            cX=nX; cY=nY;
+                        }
+                    };
+
+                    // 剪影
+                    drawRect(-size*0.5, -size*1.1, size, size*2.2, "#05080a");
+                    // 腿
+                    drawRect(-size*0.3, size*0.6, size*0.25, size*0.9, PALETTE.gShadow);
+                    drawRect(size*0.05, size*0.6, size*0.25, size*0.9, PALETTE.gShadow);
+                    // 飄帶 (背後)
+                    drawStrap(-size*0.4, size*0.2, size*1.2, size*0.08, 0);
+                    drawStrap(size*0.4, size*0.2, size*1.2, size*0.08, 2);
+                    // 軀幹
+                    drawRect(-size*0.4, -size*0.8, size*0.8, size*1.4, PALETTE.gown);
+                    ctx.fillStyle=PALETTE.sShadow; ctx.fillRect(-size*0.4, -size*0.3, size*0.8, size*0.15); ctx.fillRect(-size*0.4, 0, size*0.8, size*0.15);
+                    // 手臂 (過長袖)
+                    ctx.save(); ctx.translate(-size*0.45, -size*0.7); ctx.rotate(0.1+Math.sin(Date.now()*0.003)*0.1);
+                    drawRect(-size*0.1, 0, size*0.2, size*1.2, PALETTE.gown); drawStrap(0, size*1.1, size*0.6, size*0.08, 1);
+                    ctx.restore();
+                    ctx.save(); ctx.translate(size*0.45, -size*0.7); ctx.rotate(-0.1+Math.sin(Date.now()*0.004)*0.1);
+                    drawRect(-size*0.1, 0, size*0.2, size*1.2, PALETTE.gown); drawStrap(0, size*1.1, size*0.6, size*0.08, 3);
+                    ctx.restore();
+                    // 頭 (口枷)
+                    ctx.save(); ctx.translate(0, -size*0.9); ctx.rotate(Math.sin(Date.now()*0.02)*0.05);
+                    const hW=size*0.35, hH=size*0.45;
+                    drawRect(-hW/2, -hH*0.9, hW, hH, "#dcdcdc"); // 繃帶
+                    ctx.fillStyle="#0ff"; ctx.shadowBlur=5; ctx.shadowColor="#0ff";
+                    if(Math.random()>0.1) ctx.fillRect(-hW*0.32, -hH*0.53, size*0.04, size*0.04); // 眼
+                    ctx.shadowBlur=0;
+                    ctx.fillStyle=PALETTE.metal; ctx.fillRect(-hW*0.55, -hH*0.3, hW*1.1, hH*0.35); // 面罩
+                    ctx.restore();
+
+                } else if (state.difficultyMode === 'Veteran') {
+                    // --- VETERAN: BUTCHER ---
+                    const scale = 2.3; 
+                    const size = Math.min(w * 0.65, (20 + Math.pow(this.z, 2) * 320) * scale);
+                    const PALETTE = { skin: "#757a75", shirt: "#262626", apron: "#3f3f3f", pants: "#000", blood: "#8a0b0b", blade: "#888", rust: "#5d4037" };
+
+                    // 剪影
+                    drawRect(-size*0.7, -size*1.3, size*1.4, size*2.5, "#0a0a0a");
+                    // 腿
+                    drawRect(-size*0.35, size*0.5, size*0.3, size*0.85, PALETTE.pants);
+                    drawRect(size*0.05, size*0.5, size*0.3, size*0.85, PALETTE.pants);
+                    // 軀幹 & 圍裙
+                    drawRect(-size*0.4, -size*0.8, size*0.8, size*1.4, PALETTE.shirt);
+                    const aW=size*0.7, aH=size*1.0;
+                    drawRect(-aW/2, -size*0.3, aW, aH, PALETTE.apron);
+                    drawRot(-aW/2, -size*0.2, aW, aH, 20, PALETTE.blood, "#3a0000", size);
+                    // 頭 (歪)
+                    ctx.save(); ctx.translate(0, -size*0.85); ctx.rotate(Math.PI/9);
+                    const hW=size*0.38, hH=size*0.5;
+                    drawRect(-hW/2, -hH, hW, hH, PALETTE.skin);
+                    ctx.fillStyle="#111"; ctx.fillRect(-hW*0.35, -hH*0.6, hW*0.3, hH*0.18); // 左眼窩
+                    ctx.fillStyle="#f00"; ctx.fillRect(hW*0.18, -hH*0.54, size*0.02, size*0.02); // 右紅眼
+                    ctx.restore();
+                    // 手臂 & 菜刀
+                    const armW=size*0.24, armL=size*0.9;
+                    // 左手
+                    ctx.save(); ctx.translate(-size*0.5, -size*0.7); ctx.rotate(0.1+Math.sin(Date.now()*0.002)*0.05);
+                    drawRect(-armW/2, 0, armW, armL, PALETTE.shirt); drawRect(-armW/2, armL*0.85, armW, size*0.3, PALETTE.skin);
+                    ctx.restore();
+                    // 右手 (舉刀)
+                    ctx.save(); ctx.translate(size*0.48, -size*0.7); 
+                    const aRot = -0.8 + Math.sin(Date.now()*0.003)*0.1; ctx.rotate(aRot);
+                    drawRect(-armW/2, 0, armW, armL, PALETTE.shirt); drawRect(-armW/2, armL*0.85, armW, size*0.3, PALETTE.skin);
+                    // 刀 (直立修正)
+                    ctx.translate(0, armL*1.1); ctx.rotate(-aRot - 0.2); 
+                    drawRect(-size*0.04, -size*0.17, size*0.08, size*0.35, "#3e2723"); // 柄
+                    ctx.fillStyle=PALETTE.blade; ctx.fillRect(-size*0.04, -size*0.17-size*0.55, size*0.45, size*0.55); // 刃
+                    ctx.fillStyle=PALETTE.rust; ctx.fillRect(size*0.1, -size*0.4, size*0.1, size*0.1); // 鏽
+                    ctx.fillStyle=PALETTE.blood; ctx.fillRect(-size*0.04+size*0.37, -size*0.5, size*0.05, size*0.3); // 血刃
+                    ctx.restore();
+
+                } else if (state.difficultyMode === 'Nightmare') {
+                    // --- NIGHTMARE: CHAINSAW MAN ---
+                    const scale = 2.4; 
+                    const size = Math.min(w * 0.65, (20 + Math.pow(this.z, 2) * 320) * scale);
+                    const PALETTE = { shirt: "#d7ccc8", pants: "#3e2723", mask: "#5d4037", saw: "#f57c00", blood: "#aa0000" };
+
+                    // 剪影
+                    drawRect(-size*0.8, -size*1.3, size*1.6, size*2.6, "#0c0500");
+                    // 腿
+                    drawRect(-size*0.38, size*0.5, size*0.32, size*0.85, PALETTE.pants);
+                    drawRect(size*0.06, size*0.5, size*0.32, size*0.85, PALETTE.pants);
+                    // 軀幹
+                    drawRect(-size*0.45, -size*0.8, size*0.9, size*1.4, PALETTE.shirt);
+                    // 吊帶
+                    ctx.fillStyle="#2e2e2e"; ctx.fillRect(size*0.2, -size*0.8, size*0.12, size*1.4);
+                    // 血汙
+                    drawRot(-size*0.45, -size*0.8, size*0.9, size*1.2, 30, PALETTE.blood, "#2a0000", size);
+                    // 頭 (麻布袋 + 右歪)
+                    ctx.save(); ctx.translate(0, -size*0.9); ctx.rotate(Math.PI/8);
+                    const hW=size*0.45, hH=size*0.6;
+                    drawRect(-hW/2, -hH*0.85, hW, hH, PALETTE.mask); // Mask
+                    ctx.fillStyle="#000"; ctx.fillRect(-hW*0.35, -hH*0.45, size*0.12, size*0.12); ctx.fillRect(hW*0.15, -hH*0.45, size*0.14, size*0.12); // Eyes
+                    ctx.restore();
+                    // 手臂 (握電鋸)
+                    const armW=size*0.25;
+                    ctx.save(); ctx.translate(size*0.4, -size*0.7); ctx.rotate(0.5); // 右
+                    drawRect(-armW/2, 0, armW, size*0.8, PALETTE.shirt); drawRect(-armW/2, size*0.8, armW, size*0.25, "#a18e72");
+                    ctx.restore();
+                    ctx.save(); ctx.translate(-size*0.4, -size*0.7); ctx.rotate(-0.5); // 左
+                    drawRect(-armW/2, 0, armW, size*0.8, PALETTE.shirt); drawRect(-armW/2, size*0.8, armW, size*0.25, "#a18e72");
+                    ctx.restore();
+                    // 電鋸 (胸前 + 左傾 + 震動)
+                    ctx.save();
+                    const vX = vibrate(0.08, size); const vY = vibrate(0.08, size);
+                    ctx.translate(vX, -size*0.1+vY); ctx.rotate(-Math.PI/6);
+                    const sW=size*0.8, sH=size*0.5;
+                    drawRect(-sW*0.6, -sH/2, sW, sH, PALETTE.saw); // 機身
+                    drawRot(-sW*0.6, -sH/2, sW, sH, 15, PALETTE.blood, "#2a0000", size);
+                    ctx.translate(sW*0.35, 0); ctx.rotate(0.05); // 導板
+                    const bL=size*1.6, bH=size*0.3;
+                    drawRect(0, -bH/2, bL, bH, "#546e7a");
+                    drawRot(bL*0.5, -bH/2, bL*0.5, bH, 20, "#ff0000", "#aa0000", size); // 鋸條血
+                    // 鋸齒
+                    ctx.fillStyle="#cfd8dc"; const off = (Date.now()/15)%(size*0.2);
+                    for(let i=0; i<bL; i+=size*0.15) { ctx.fillRect(i-off, -bH/2-size*0.06, size*0.1, size*0.06); ctx.fillRect(i+off, bH/2, size*0.1, size*0.06); }
+                    ctx.restore();
+
+                } else {
+                    // --- NO HOPE: THE GIANT (V3) ---
+                    const scale = 3.2; 
+                    const size = Math.min(w * 0.65, (20 + Math.pow(this.z, 2) * 320) * scale);
+                    const PALETTE = { skin: "#6d6459", shadow: "#3e3630", dirt: "#1f1c18", pants: "#2b2825", blood: "#660000", dried: "#2a0505", scar: "#3e2723" };
+                    const breathe = Math.sin(Date.now()*0.0015)*0.05;
+
+                    // 固定雜訊繪製 (Deterministic)
+                    const drawStatic = (x, y, w, h, den, seedOffset, type) => {
+                        for(let i=0; i<den; i++) {
+                            const r = Math.sin(this.wobbleSeed + i * 132.1 + seedOffset) * 10000; const rv = r - Math.floor(r);
+                            const r2 = Math.sin(this.wobbleSeed + i * 54.3 + seedOffset) * 10000; const rv2 = r2 - Math.floor(r2);
+                            let col = type==='blood' ? (rv>0.6?PALETTE.blood:PALETTE.dried) : (rv>0.4?PALETTE.dirt:PALETTE.shadow);
+                            if(type==='scar') col = PALETTE.scar;
+                            const s = size * (type==='scar'?0.06:0.02);
+                            const sy = size * (type==='scar'?0.015:0.02);
+                            ctx.fillStyle = col; ctx.fillRect(x + rv*w, y + rv2*h, s, sy);
+                        }
+                    };
+
+                    // 剪影
+                    drawRect(-size*1.0, -size*1.2, size*2.0, size*2.5, "#050403");
+                    // 腿 (髒)
+                    const lW=size*0.4, lH=size*0.7;
+                    drawRect(-size*0.45, size*0.6, lW, lH, PALETTE.skin); drawStatic(-size*0.45, size*0.6, lW, lH, 20, 100, 'dirt');
+                    drawRect(-size*0.45, size*0.8, lW, lH*0.6, PALETTE.pants);
+                    drawRect(size*0.05, size*0.6, lW, lH, PALETTE.skin); drawStatic(size*0.05, size*0.6, lW, lH, 20, 200, 'dirt');
+                    drawRect(size*0.05, size*0.8, lW, lH*0.6, PALETTE.pants);
+                    ctx.fillStyle=PALETTE.pants; ctx.fillRect(-size*0.25, size*0.5, size*0.5, size*0.5); // 襠
+                    // 軀幹
+                    const bW = size*0.9+breathe*size*0.1;
+                    drawRect(-bW/2, -size*0.2, bW, size*0.9, PALETTE.shadow); // 腹
+                    drawStatic(-bW/2, -size*0.2, bW, size*0.5, 15, 300, 'blood');
+                    const cW = size*1.2+breathe*size*0.05;
+                    drawRect(-cW/2, -size*0.8, cW, size*0.8, PALETTE.skin); // 胸
+                    drawStatic(-cW/2, -size*0.8, cW, size*0.8, 40, 400, 'dirt');
+                    drawStatic(-cW/2, -size*0.8, cW, size*0.6, 10, 500, 'scar');
+                    drawStatic(-cW/4, -size*0.7, cW/2, size*0.4, 20, 600, 'blood');
+                    // 斜方肌
+                    ctx.fillStyle=PALETTE.skin; ctx.beginPath();
+                    const tH = -size*1.1+breathe*size*0.05;
+                    ctx.moveTo(-size*0.9, -size*0.5); ctx.lineTo(-size*0.3, tH); ctx.lineTo(size*0.3, tH); ctx.lineTo(size*0.9, -size*0.5); ctx.fill();
+                    // 頭 (小)
+                    const hW=size*0.25, hH=size*0.3, hY=tH+size*0.15;
+                    drawRect(-hW/2, hY, hW, hH, PALETTE.shadow);
+                    ctx.fillStyle="#1a0505"; ctx.fillRect(-hW*0.3, hY+hH*0.5, hW*0.6, hH*0.35); // 嘴
+                    ctx.fillStyle="#ffeb3b"; ctx.fillRect(-hW*0.2, hY+hH*0.25, size*0.02, size*0.02); ctx.fillRect(hW*0.15, hY+hH*0.25, size*0.02, size*0.02); // 眼
+                    // 手臂 (長)
+                    const aW=size*0.35;
+                    ctx.save(); ctx.translate(-size*0.8, -size*0.5); ctx.rotate(0.15+Math.sin(Date.now()*0.001)*0.05);
+                    drawRect(-aW/2, 0, aW, size*1.3, PALETTE.skin); drawStatic(-aW/2, 0, aW, size*1.3, 20, 700, 'dirt'); drawStatic(-aW/2, 0, aW, size*1.0, 5, 750, 'scar');
+                    ctx.fillStyle="#455a64"; ctx.fillRect(-aW*0.6, size*1.1, aW*1.2, size*0.15); // 鏈
+                    ctx.fillStyle=PALETTE.shadow; ctx.fillRect(-aW*0.6, size*1.3, aW*1.2, size*0.45); // 拳
+                    drawStatic(-aW*0.6, size*1.3, aW*1.2, size*0.45, 15, 800, 'blood');
+                    ctx.restore();
+                    // 右手
+                    ctx.save(); ctx.translate(size*0.8, -size*0.5); ctx.rotate(-0.15-Math.sin(Date.now()*0.001)*0.05);
+                    drawRect(-aW/2, 0, aW, size*1.3, PALETTE.skin); drawStatic(-aW/2, 0, aW, size*1.3, 20, 900, 'dirt');
+                    ctx.fillStyle="#455a64"; ctx.fillRect(-aW*0.6, size*1.1, aW*1.2, size*0.15);
+                    ctx.fillStyle=PALETTE.shadow; ctx.fillRect(-aW*0.6, size*1.3, aW*1.2, size*0.45);
+                    drawStatic(-aW*0.6, size*1.3, aW*1.2, size*0.45, 15, 1000, 'blood');
+                    ctx.restore();
+                }
+
+                if (state.debugMode) {
+                    ctx.font = `8px monospace`; ctx.fillStyle = "#fff"; ctx.textAlign = "center";
+                    ctx.fillText(`BOSS: ${state.difficultyMode.toUpperCase()}`, 0, -size * 1.6);
+                }
+                ctx.restore();
+                return; // BOSS 繪製結束
+            }
+
+            // --- 普通敵人繪製 ---
+            const size = Math.min(w * 0.55, (15 + Math.pow(this.z, 2) * 280));
             ctx.save(); ctx.globalAlpha = this.opacity; ctx.translate(screenX, screenY);
-            
             ctx.fillStyle = `hsl(${this.clothesHue}, 40%, 35%)`;
             ctx.fillRect(-size/3, -size/2.5, size/1.5, size/1.2); 
             ctx.fillStyle = `hsl(210, 30%, 20%)`;
             ctx.fillRect(-size/3, size/4, size/1.5, size/4); 
             ctx.fillStyle = `hsl(${this.skinHue}, 45%, 50%)`;
             ctx.fillRect(-size/3.5, -size*0.9, size/1.75, size/2.2); 
-            ctx.fillRect(-size/2, -size/3, size/6, size/3); 
-            ctx.fillRect(size/3, -size/3, size/6, size/3); 
+            ctx.fillRect(-size/2, -size/3, size/6, size/3); ctx.fillRect(size/3, -size/3, size/6, size/3); 
             ctx.fillStyle = "#000"; 
-            const eyeS = size/10;
-            ctx.fillRect(-size/6, -size*0.75, eyeS, eyeS);
-            ctx.fillRect(size/15, -size*0.75, eyeS, eyeS);
-            ctx.fillRect(-size/15, -size*0.6, size/7.5, eyeS/2); 
-
-            if (isClosest && !this.isBoss) {
-                ctx.strokeStyle = '#f00'; ctx.lineWidth = 3; ctx.strokeRect(-size/2 - 5, -size - 5, size + 10, size + 10);
-            }
-            if (!this.isBoss) {
-                ctx.font = `bold ${Math.max(8, size/7.5)}px 'Press Start 2P'`;
-                ctx.fillStyle = isClosest ? '#fff' : '#444'; ctx.textAlign = 'center';
-                ctx.shadowBlur = 4; ctx.shadowColor = "#000"; ctx.fillText(this.word.toUpperCase(), 0, -size * 1.05);
-            }
-
-            // 新增：Debug 模式下顯示速度
-            if (state.debugMode && !this.isBoss) {
-                ctx.font = `8px monospace`;
-                ctx.fillStyle = "#0f0";
-                // 根據模式不同顯示不同速度來源
-                const spd = state.bossMode ? (BOSS_SPEEDS[state.difficultyMode] || 0) : this.speed;
-                ctx.fillText(`SPD:${spd.toFixed(5)}`, 0, -size * 1.3);
-            }
-
+            const eyeS = size/10; ctx.fillRect(-size/6, -size*0.75, eyeS, eyeS); ctx.fillRect(size/15, -size*0.75, eyeS, eyeS); ctx.fillRect(-size/15, -size*0.6, size/7.5, eyeS/2); 
+            if (isClosest) { ctx.strokeStyle = '#f00'; ctx.lineWidth = 3; ctx.strokeRect(-size/2 - 5, -size - 5, size + 10, size + 10); }
+            ctx.font = `bold ${Math.max(8, size/7.5)}px 'Press Start 2P'`; ctx.fillStyle = isClosest ? '#fff' : '#444'; ctx.textAlign = 'center'; ctx.shadowBlur = 4; ctx.shadowColor = "#000"; ctx.fillText(this.word.toUpperCase(), 0, -size * 1.05);
+            if (state.debugMode) { ctx.font = `8px monospace`; ctx.fillStyle = "#0f0"; ctx.fillText(`SPD:${this.speed.toFixed(5)}`, 0, -size * 1.3); }
             ctx.restore();
         }
     }
@@ -1223,18 +1160,12 @@
     }
 
     function getNextWord() {
-        // 安全檢查 1：如果 currentBookData 為空，回傳安全字
         const fallbackWords = ["test", "debug", "run", "code", "fix"];
-        
         if (!currentBookData || !currentBookData[`L${selectedLesson}`] || !currentBookData[`L${selectedLesson}`].stages) {
-             if (state.wordPool.length === 0) {
-                 state.wordPool = [...fallbackWords].sort(() => Math.random() - 0.5);
-             }
+             if (state.wordPool.length === 0) state.wordPool = [...fallbackWords].sort(() => Math.random() - 0.5);
              return state.wordPool.pop();
         }
-
         if (state.wordPool.length === 0) {
-            // 安全檢查 2：如果 stages["1"] 不存在，回傳安全字
             const list = currentBookData[`L${selectedLesson}`].stages["1"] || fallbackWords;
             state.wordPool = [...list].sort(() => Math.random() - 0.5);
         }
@@ -1243,14 +1174,10 @@
 
     function getNextSentence() {
         const fallbackSentences = ["SYSTEM ERROR", "DEBUG MODE", "TEST SENTENCE"];
-        
         if (!currentBookData || !currentBookData[`L${selectedLesson}`] || !currentBookData[`L${selectedLesson}`].stages) {
-             if (state.sentencePool.length === 0) {
-                 state.sentencePool = [...fallbackSentences].sort(() => Math.random() - 0.5);
-             }
+             if (state.sentencePool.length === 0) state.sentencePool = [...fallbackSentences].sort(() => Math.random() - 0.5);
              return state.sentencePool.pop();
         }
-
         if (state.sentencePool.length === 0) {
             const list = currentBookData[`L${selectedLesson}`].stages["2"] || fallbackSentences;
             state.sentencePool = [...list].sort(() => Math.random() - 0.5);
@@ -1261,32 +1188,17 @@
     function startGame(keepScore = false) {
         randomizeBackground(); 
         state.gameActive = true; 
-        // 修改：使用當前難度的 maxHP
         state.hp = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP;
-        
-        if (!keepScore) { state.score = 0; }
-        state.kills = 0; 
-        state.bossesDefeated = 0;
+        if (!keepScore) state.score = 0; 
+        state.kills = 0; state.bossesDefeated = 0;
         state.enemies = []; state.particles = []; state.combo = 0; state.freezeTimer = 0;
         state.wordPool = []; state.sentencePool = []; state.bossMode = false;
-        state.damageAlpha = 0; 
-        state.damageTaken = 0; 
+        state.damageAlpha = 0; state.damageTaken = 0; 
         document.getElementById('boss-ui').style.opacity = '0';
         document.getElementById('perfect-badge').style.display = 'none'; 
-        
-        // 強制更新 UI 以確保重置
         updateUIPanel();
-
-        // 根據 Debug 模式顯示面板
         const dbgPanel = document.getElementById('debug-panel');
-        if(state.debugMode) {
-            dbgPanel.classList.remove('hidden');
-            dbgPanel.classList.add('flex');
-        } else {
-            dbgPanel.classList.add('hidden');
-            dbgPanel.classList.remove('flex');
-        }
-
+        if(state.debugMode) { dbgPanel.classList.remove('hidden'); dbgPanel.classList.add('flex'); } else { dbgPanel.classList.add('hidden'); dbgPanel.classList.remove('flex'); }
         requestWakeLock(); handleResize(); initSpeech(); requestAnimationFrame(gameLoop);
         sfx.init();
     }
@@ -1332,7 +1244,6 @@
             if (input.includes(target)) { lastMatchedWord = target; hitBoss(); }
         } else {
             const matchedEnemies = state.enemies.filter(e => !e.isDying && input.includes(clean(e.word)));
-            
             if (matchedEnemies.length > 0) {
                 matchedEnemies.sort((a,b) => b.z - a.z);
                 const target = matchedEnemies[0];
@@ -1345,34 +1256,18 @@
     function killEnemy(idx, isAuto = false) {
         const en = state.enemies[idx]; if(!en) return;
         en.isDying = true; 
-        
-        // 修改 trigger logic 以使用新定義的 BOSS_TRIGGER_KILLS 參數
         const requiredKills = BOSS_TRIGGER_KILLS[state.difficultyMode] || 15;
-        
-        // 修改：使用當前難度的 COMBO 參數
         const comboConfig = GAME_BALANCE.COMBO[state.difficultyMode];
         let scoreGain = (comboConfig.baseScore + (state.combo * comboConfig.comboMultiplier)) * state.difficulty;
         state.score += scoreGain;
-
         state.kills++; 
-        
         if(!isAuto) {
             state.combo++;
-            // 修改：使用當前難度的 rewardThreshold
             if(state.combo > 0 && state.combo % comboConfig.rewardThreshold === 0) triggerReward();
-            
-            // 修改：使用當前難度的 criticalChance
-            if (Math.random() < comboConfig.criticalChance && !state.bossMode) {
-                triggerCriticalWipe();
-            }
+            if (Math.random() < comboConfig.criticalChance && !state.bossMode) triggerCriticalWipe();
         }
-
         createExplosion(en); state.shake = 10; sfx.kill();
-
-        // 檢查 Boss 觸發條件
-        if (state.kills >= requiredKills && !state.bossMode) {
-            startBossBattle();
-        }
+        if (state.kills >= requiredKills && !state.bossMode) startBossBattle();
     }
 
     function startBossBattle() {
@@ -1393,59 +1288,30 @@
     }
 
     function hitBoss() {
-        state.bossWordIndex++; 
-        state.combo++;
-
-        // 取得當前難度的 Boss 戰參數
+        state.bossWordIndex++; state.combo++;
         const bossParams = BOSS_BATTLE_CONFIG[state.difficultyMode] || BOSS_BATTLE_CONFIG['Veteran'];
-
-        // Boss 戰分數計算 (套用 bossParams.scoreMult)
         let scoreGain = (GAME_BALANCE.COMBO[state.difficultyMode].baseScore * bossParams.scoreMult + (state.combo * 20)) * state.difficulty;
         state.score += scoreGain;
 
-        // 注意：移除了 Boss 戰中的一般 Combo 獎勵 triggerReward()
-        // 玩家必須依靠自己的技巧或 Boss 弱點擊破
-
-        // Boss 弱點/爆擊機制 (依照難度機率)
         if (Math.random() < bossParams.criticalChance) {
-            // 觸發強烈擊退與定身
-            if (state.enemies[0]) {
-                state.enemies[0].z = Math.max(0.1, state.enemies[0].z - bossParams.pushback);
-            }
-            state.shake = 50;
-            state.freezeTimer = bossParams.stunDuration;
-            
-            // 顯示爆擊提示
+            if (state.enemies[0]) state.enemies[0].z = Math.max(0.1, state.enemies[0].z - bossParams.pushback);
+            state.shake = 50; state.freezeTimer = bossParams.stunDuration;
             const toast = document.getElementById('reward-toast');
-            toast.innerText = "BOSS STUNNED!";
-            toast.classList.add('toast-active');
-            toast.style.color = '#f0f'; 
-            toast.style.textShadow = '0 0 20px #f0f';
+            toast.innerText = "BOSS STUNNED!"; toast.classList.add('toast-active');
+            toast.style.color = '#f0f'; toast.style.textShadow = '0 0 20px #f0f';
             setTimeout(() => toast.classList.remove('toast-active'), 1000);
             sfx.reward(); 
         } else {
-            // 普通受擊 (微量擊退)
             state.shake = 20; 
             if (state.enemies[0]) state.enemies[0].z = Math.max(0.2, state.enemies[0].z - 0.1); 
         }
-
-        createExplosion(state.enemies[0]); 
-        sfx.kill();
-        
+        createExplosion(state.enemies[0]); sfx.kill();
         if (state.bossWordIndex >= state.bossData.words.length) {
             state.enemies[0].isDying = true; state.bossesDefeated++;
-            
-            // 階段獎勵：打完一句話必定補血 (保留)
             executeReward('RECOVER');
-
             setTimeout(() => {
                 const required = BOSS_QUOTAS[state.difficultyMode] || 1;
-                
-                if (state.bossesDefeated < required) {
-                     startBossBattle(); 
-                } else {
-                     winGame(); 
-                }
+                if (state.bossesDefeated < required) startBossBattle(); else winGame(); 
             }, 800);
         } else updateBossUI();
     }
@@ -1458,22 +1324,13 @@
     }
 
     function triggerDamage() {
-        // 修改：使用當前難度的 damageShake
         const survivalConfig = GAME_BALANCE.SURVIVAL[state.difficultyMode];
-        state.hp--; 
-        state.shake = survivalConfig.damageShake; 
-        state.combo = 0; 
-        state.damageTaken++; 
-        sfx.damage();
-        
-        state.damageAlpha = 0.8; 
-
+        state.hp--; state.shake = survivalConfig.damageShake; state.combo = 0; state.damageTaken++; 
+        sfx.damage(); state.damageAlpha = 0.8; 
         if (state.bossMode && state.enemies[0]) {
-            // 受擊退後距離 logic (更新：使用 BOSS_BEHAVIOR 配置)
             const pushback = BOSS_BEHAVIOR.pushback[state.difficultyMode] || 0.5;
             state.enemies[0].z = pushback; 
         }
-        
         if (state.hp <= 0) endGame();
     }
 
@@ -1481,25 +1338,18 @@
         if (!state.gameActive || state.isPaused) return;
         const rect = canvas.parentElement.getBoundingClientRect();
         const w = rect.width; const h = rect.height;
-        
-        ctx.setTransform(1, 0, 0, 1, 0, 0); 
-        ctx.clearRect(0, 0, canvas.width, canvas.height); 
-        
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); 
         if (state.shake > 0) { 
             ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); 
-            state.shake *= 0.88; 
-            if(state.shake < 0.5) state.shake = 0;
+            state.shake *= 0.88; if(state.shake < 0.5) state.shake = 0;
         }
-
         const boss = state.enemies.find(e => e.isBoss);
         if (state.bossMode && boss && boss.z > GAME_BALANCE.DISTANCE_THRESHOLDS.bossShakeZ) {
             const proximityIntensity = (boss.z - GAME_BALANCE.DISTANCE_THRESHOLDS.bossShakeZ) * 20; 
             const shakeY = (Math.random() - 0.5) * proximityIntensity;
             ctx.translate(0, shakeY);
         }
-
         if (state.freezeTimer > 0) state.freezeTimer--;
-        
         ctx.fillStyle = "#222";
         state.bgStars.forEach(s => {
             const sx = w/2 + (s.x * s.z); const sy = h/2 + (s.y * s.z);
@@ -1507,15 +1357,12 @@
             if (state.freezeTimer <= 0) s.z += 0.003; if (s.z > 1) s.z = 0;
         });
         
-        // 使用 GAME_BALANCE.SPAWN_RATES
         const spawnRate = GAME_BALANCE.SPAWN_RATES[state.difficultyMode] || 2200;
-        
         if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > spawnRate) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
 
         const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
-        
         state.enemies.sort((a,b) => a.z - b.z);
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             const en = state.enemies[i];
@@ -1526,18 +1373,15 @@
                 en.draw(ctx, w, h, en === closest);
             }
         }
-
         for (let i = state.particles.length - 1; i >= 0; i--) {
             if (!state.particles[i].update()) state.particles.splice(i, 1); else state.particles[i].draw(ctx);
         }
-
         if (state.damageAlpha > 0.01) {
             ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.fillStyle = `rgba(255, 0, 0, ${state.damageAlpha * 0.4})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height); 
             state.damageAlpha *= 0.9; 
         }
-
         updateUIPanel(); requestAnimationFrame(gameLoop);
     }
 
@@ -1545,30 +1389,19 @@
         document.getElementById('score-display').innerText = Math.floor(state.score).toString().padStart(5, '0');
         const comboEl = document.getElementById('combo-display');
         comboEl.style.opacity = state.combo > 1 ? '1' : '0'; comboEl.innerText = `${state.combo} COMBO`;
-        
         const status = document.getElementById('status-label');
         const ecgPath = document.getElementById('ecg-path');
         const ecgLine = document.querySelector('.ecg-line');
-        
         if (state.hp > 3) { 
-            status.innerText = 'STABLE'; 
-            status.className = 'pixel-font text-green-500 text-[8px] font-bold'; 
-            ecgPath.setAttribute('stroke', 'lime');
-            ecgLine.style.animationDuration = "2s";
+            status.innerText = 'STABLE'; status.className = 'pixel-font text-green-500 text-[8px] font-bold'; 
+            ecgPath.setAttribute('stroke', 'lime'); ecgLine.style.animationDuration = "2s";
+        } else if (state.hp > 1) { 
+            status.innerText = 'CAUTION'; status.className = 'pixel-font text-yellow-500 text-[8px] font-bold'; 
+            ecgPath.setAttribute('stroke', 'yellow'); ecgLine.style.animationDuration = "1s"; 
+        } else { 
+            status.innerText = 'DANGER'; status.className = 'pixel-font text-red-600 text-[8px] font-bold flicker'; 
+            ecgPath.setAttribute('stroke', 'red'); ecgLine.style.animationDuration = "0.5s"; 
         }
-        else if (state.hp > 1) { 
-            status.innerText = 'CAUTION'; 
-            status.className = 'pixel-font text-yellow-500 text-[8px] font-bold'; 
-            ecgPath.setAttribute('stroke', 'yellow');
-            ecgLine.style.animationDuration = "1s"; 
-        }
-        else { 
-            status.innerText = 'DANGER'; 
-            status.className = 'pixel-font text-red-600 text-[8px] font-bold flicker'; 
-            ecgPath.setAttribute('stroke', 'red');
-            ecgLine.style.animationDuration = "0.5s"; 
-        }
-
         const target = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
         let t = "AWAITING...";
         const required = BOSS_QUOTAS[state.difficultyMode] || 1;
@@ -1590,60 +1423,41 @@
     function updateResultDetails(elId) {
         const el = document.getElementById(elId);
         if(!el) return;
-        
         const now = new Date();
         const dateStr = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-        
         let title = "UNKNOWN SECTOR";
-        if (currentBookData && currentBookData[`L${selectedLesson}`]) {
-            title = currentBookData[`L${selectedLesson}`].title;
-        }
-
+        if (currentBookData && currentBookData[`L${selectedLesson}`]) { title = currentBookData[`L${selectedLesson}`].title; }
         el.innerHTML = `
             <div class="grid grid-cols-[35%_65%] gap-1 text-[9px] uppercase tracking-wider font-bold text-left">
                 <div class="text-zinc-500">MISSION</div><div class="text-blue-400">Book ${selectedBook} - ${title}</div>
-                <div class="text-zinc-500">LEVEL</div><div class="text-red-400">${state.difficultyMode}</div>
+                <div class="text-zinc-500">DIFFICULTY</div><div class="text-red-400">${state.difficultyMode}</div>
                 <div class="text-zinc-500">UNIT</div><div class="text-white">${state.player.class}</div>
-                <div class="text-zinc-500">AGENT</div><div class="text-white">${state.player.no}. ${state.player.name}</div>
+                <div class="text-zinc-500">OPERATOR</div><div class="text-white">${state.player.no}. ${state.player.name}</div>
                 <div class="text-zinc-500">DATE</div><div class="text-zinc-400">${dateStr}</div>
             </div>
         `;
     }
 
     function winGame() { 
-        state.gameActive = false; 
-        if(wakeLock) releaseWakeLock(); 
+        state.gameActive = false; if(wakeLock) releaseWakeLock(); 
         document.getElementById('win-score-display').innerText = Math.floor(state.score); 
         document.getElementById('win-screen').classList.remove('hidden'); 
-
         updateResultDetails('win-details');
-
-        if (state.damageTaken === 0) {
-            const badge = document.getElementById('perfect-badge');
-            badge.style.display = 'block';
-            sfx.perfect();
-        }
-
+        if (state.damageTaken === 0) { document.getElementById('perfect-badge').style.display = 'block'; sfx.perfect(); }
         const btn = document.getElementById('next-level-btn');
         if (state.difficultyMode !== 'NoHope') {
             btn.classList.remove('hidden');
             const nextMode = { 'Rookie': 'Veteran', 'Veteran': 'Nightmare', 'Nightmare': 'NoHope' }[state.difficultyMode];
             btn.innerText = `CHALLENGE: ${nextMode}`;
-        } else {
-            btn.classList.add('hidden');
-        }
-
+        } else { btn.classList.add('hidden'); }
         syncData(); 
     }
     
     function endGame() { 
-        state.gameActive = false; 
-        if(wakeLock) releaseWakeLock(); 
+        state.gameActive = false; if(wakeLock) releaseWakeLock(); 
         document.getElementById('fail-score-display').innerText = Math.floor(state.score); 
         document.getElementById('game-over-screen').classList.remove('hidden'); 
-        
         updateResultDetails('fail-details');
-        
         syncData(); 
     }
     function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release(); wakeLock = null; } }
