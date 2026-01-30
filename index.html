@@ -150,11 +150,15 @@
             box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
         }
 
+        /* 修改：BOSS UI 移動到下方 */
         #boss-ui {
-            position: absolute; top: 15px; left: 0; width: 100%;
+            position: absolute; 
+            bottom: 20px; /* 從 top 改為 bottom，使其位於 Canvas 底部 */
+            left: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
             pointer-events: none; transition: opacity 0.5s; opacity: 0;
             z-index: 150;
+            padding-bottom: 10px;
         }
         .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
 
@@ -336,6 +340,8 @@
     </div>
 
     <div id="boss-ui" class="px-5 w-full">
+        <!-- 修改：增加階段顯示，讓玩家知道還要打幾句 -->
+        <div id="boss-phase-display" class="text-center text-[8px] text-red-500 font-bold mb-1 tracking-widest">THREAT LEVEL MAX</div>
         <div class="w-full bg-zinc-900 h-3 border-2 border-white mb-2 overflow-hidden rounded-full">
             <div id="boss-hp-bar" class="h-full bg-red-600 transition-all duration-300" style="width: 100%"></div>
         </div>
@@ -431,16 +437,30 @@
         "https://d4cheap16.github.io/tddt/BG05.png"
     ];
 
-    const BOSS_QUOTAS = { 'Rookie': 1, 'Veteran': 2, 'Nightmare': 3, 'NoHope': 5 };
-    const BOSS_SPEEDS = { 'Rookie': 0.0008, 'Veteran': 0.0012, 'Nightmare': 0.0018, 'NoHope': 0.0025 };
-    const ENEMY_BEHAVIOR = { sprintZ: 0.75, sprintMultiplier: 1.4 };
-    const BOSS_BEHAVIOR = { sprintZ: 0.4, sprintMultiplier: 2.0, pushback: { 'Rookie': 0.5, 'Veteran': 0.6, 'Nightmare': 0.7, 'NoHope': 0.8 } };
+    /* --- BOSS 戰參數設定區 (可依此調整) ---
+       1. startZ: BOSS 起始距離 (0 = 極遠, 1 = 面前). 越小越遠.
+       2. speed: BOSS 移動速度. 
+       3. sentencesRequired: 需要念完幾句才能殺死 BOSS (累積血量制).
+    */
+    const BOSS_CONFIG_DATA = {
+        'Rookie':    { startZ: 0.30, speed: 0.0006, sentencesRequired: 1 },
+        'Veteran':   { startZ: 0.35, speed: 0.0009, sentencesRequired: 2 },
+        'Nightmare': { startZ: 0.40, speed: 0.0012, sentencesRequired: 3 },
+        'NoHope':    { startZ: 0.45, speed: 0.0016, sentencesRequired: 5 }
+    };
+
+    const BOSS_BEHAVIOR = { 
+        sprintZ: 0.75, // 當距離超過此值，BOSS 會加速 (Sprint)
+        sprintMultiplier: 1.5, // 加速倍率
+        pushback: { 'Rookie': 0.4, 'Veteran': 0.35, 'Nightmare': 0.3, 'NoHope': 0.25 } // 受傷後(念錯或被攻擊)不退後，但念完一句會退後
+    };
     
+    // BOSS 戰鬥細節 (暈眩、擊退等)
     const BOSS_BATTLE_CONFIG = {
-        'Rookie':    { criticalChance: 0.05, stunDuration: 50, pushback: 0.6, scoreMult: 2.0 },
-        'Veteran':   { criticalChance: 0.04, stunDuration: 40, pushback: 0.5, scoreMult: 2.0 },
-        'Nightmare': { criticalChance: 0.03, stunDuration: 35, pushback: 0.3, scoreMult: 2.5 },
-        'NoHope':    { criticalChance: 0.01, stunDuration: 30, pushback: 0.2, scoreMult: 3.0 }
+        'Rookie':    { criticalChance: 0.05, stunDuration: 50,  pushback: 0.3, scoreMult: 2.0 },
+        'Veteran':   { criticalChance: 0.04, stunDuration: 40,  pushback: 0.25, scoreMult: 2.0 },
+        'Nightmare': { criticalChance: 0.03, stunDuration: 35,  pushback: 0.2, scoreMult: 2.5 },
+        'NoHope':    { criticalChance: 0.01, stunDuration: 30,  pushback: 0.1, scoreMult: 3.0 }
     };
 
     const ENEMY_SPEEDS = {
@@ -450,13 +470,16 @@
         'NoHope':   { min: 0.0020, max: 0.0030 }
     };
     
+    // 遊戲行為定義
+    const ENEMY_BEHAVIOR = { sprintZ: 0.75, sprintMultiplier: 1.4 };
+
     const GAME_BALANCE = {
         SPAWN_RATES: { 'Rookie': 2500, 'Veteran': 2200, 'Nightmare': 1800, 'NoHope': 1500 },
         COMBO: {
             'Rookie':    { rewardThreshold: 5, criticalChance: 0.05, baseScore: 100, comboMultiplier: 10 },
             'Veteran':   { rewardThreshold: 7, criticalChance: 0.04, baseScore: 150, comboMultiplier: 15 },
-            'Nightmare': { rewardThreshold: 10, criticalChance: 0.03, baseScore: 200, comboMultiplier: 20 },
-            'NoHope':    { rewardThreshold: 15, criticalChance: 0.01, baseScore: 300, comboMultiplier: 30 }
+            'Nightmare': { rewardThreshold: 9, criticalChance: 0.03, baseScore: 200, comboMultiplier: 20 },
+            'NoHope':    { rewardThreshold: 10, criticalChance: 0.01, baseScore: 300, comboMultiplier: 30 }
         },
         SURVIVAL: {
             'Rookie':    { maxHP: 6, damageShake: 20 },
@@ -487,6 +510,7 @@
         }
     };
     
+    // 當擊殺多少敵人後觸發 BOSS
     const BOSS_TRIGGER_KILLS = { 'Rookie': 10, 'Veteran': 15, 'Nightmare': 20, 'NoHope': 30 };
 
     const sfx = {
@@ -521,7 +545,10 @@
         score: 0, hp: 5, gameActive: false, isPaused: false,
         level: 1, kills: 0, combo: 0,
         difficulty: 1.0, difficultyMode: 'Veteran',
-        bossesDefeated: 0, freezeTimer: 0,
+        // 修改: 改為累積制，不再計算 defeated count
+        bossSentencesCleared: 0, 
+        bossSentencesRequired: 1,
+        freezeTimer: 0,
         enemies: [], particles: [],
         bgStars: [], 
         shake: 0, bossMode: false, bossData: null, bossWordIndex: 0,
@@ -868,7 +895,9 @@
                 const settings = ENEMY_SPEEDS[state.difficultyMode] || ENEMY_SPEEDS['Veteran'];
                 this.speed = settings.min + Math.random() * (settings.max - settings.min);
             } else {
-                this.speed = 0; 
+                // 修改：BOSS 使用獨立的速度參數
+                const bConfig = BOSS_CONFIG_DATA[state.difficultyMode] || BOSS_CONFIG_DATA['Veteran'];
+                this.speed = bConfig.speed; 
             }
 
             this.isDying = false; this.opacity = 1; this.wobbleSeed = Math.random() * 1000;
@@ -881,7 +910,8 @@
             if (this.isDying) { this.opacity -= 0.2; return this.opacity <= 0; }
             if (state.freezeTimer <= 0) {
                 if (state.bossMode && this.isBoss) {
-                    let s = (BOSS_SPEEDS[state.difficultyMode] || 0.0008);
+                    // 修改：BOSS 行為邏輯使用新參數
+                    let s = this.speed; // 使用建構時設定的 BOSS 專屬速度
                     if (this.z > BOSS_BEHAVIOR.sprintZ) s *= BOSS_BEHAVIOR.sprintMultiplier; 
                     this.z += s; 
                 }
@@ -1190,8 +1220,11 @@
         state.gameActive = true; 
         state.hp = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP;
         if (!keepScore) state.score = 0; 
-        state.kills = 0; state.bossesDefeated = 0;
-        state.enemies = []; state.particles = []; state.combo = 0; state.freezeTimer = 0;
+        state.kills = 0; 
+        // 重置累積數
+        state.bossSentencesCleared = 0;
+        state.combo = 0; state.freezeTimer = 0;
+        state.enemies = []; state.particles = []; 
         state.wordPool = []; state.sentencePool = []; state.bossMode = false;
         state.damageAlpha = 0; state.damageTaken = 0; 
         document.getElementById('boss-ui').style.opacity = '0';
@@ -1234,20 +1267,33 @@
     }
 
     let lastMatchedWord = "";
+    let lastMatchTime = 0; 
+    const REPEAT_COOLDOWN = 500; 
+
     function processCommand(text) {
         const clean = (s) => s.replace(/[.,!?]/g, "").trim().toLowerCase();
         const input = clean(text);
-        if (!input || input === lastMatchedWord) return;
+        
+        const now = Date.now();
+        const isSameWord = (input === lastMatchedWord);
+        const isCoolingDown = (now - lastMatchTime < REPEAT_COOLDOWN);
+        
+        if (!input || (isSameWord && isCoolingDown)) return;
 
         if (state.bossMode) {
             const target = clean(state.bossData.words[state.bossWordIndex]);
-            if (input.includes(target)) { lastMatchedWord = target; hitBoss(); }
+            if (input.includes(target)) { 
+                lastMatchedWord = target; 
+                lastMatchTime = now; 
+                hitBoss(); 
+            }
         } else {
             const matchedEnemies = state.enemies.filter(e => !e.isDying && input.includes(clean(e.word)));
             if (matchedEnemies.length > 0) {
                 matchedEnemies.sort((a,b) => b.z - a.z);
                 const target = matchedEnemies[0];
                 lastMatchedWord = clean(target.word);
+                lastMatchTime = now; 
                 killEnemy(state.enemies.indexOf(target));
             }
         }
@@ -1271,12 +1317,34 @@
     }
 
     function startBossBattle() {
-        state.bossMode = true; state.enemies = [new Enemy("BOSS", true)]; state.enemies[0].z = 0.35;
-        const full = getNextSentence(); state.bossData = { full, words: full.split(' ') }; state.bossWordIndex = 0;
+        state.bossMode = true; 
+        state.bossSentencesCleared = 0; // 重置已完成句數
+
+        // 讀取新的 BOSS 設定
+        const bConfig = BOSS_CONFIG_DATA[state.difficultyMode] || BOSS_CONFIG_DATA['Veteran'];
+        state.bossSentencesRequired = bConfig.sentencesRequired;
+
+        // 生成 BOSS，設定其初始 Z 軸位置
+        const boss = new Enemy("BOSS", true);
+        boss.z = bConfig.startZ; // 使用設定的起始距離
+        state.enemies = [boss];
+        
+        loadNextBossSentence();
+        
         document.getElementById('boss-ui').style.opacity = '1';
+        sfx.boss();
+    }
+
+    // 載入下一句 (不重生 BOSS)
+    function loadNextBossSentence() {
+        const full = getNextSentence(); 
+        state.bossData = { full, words: full.split(' ') }; 
+        state.bossWordIndex = 0;
+        
+        // 更新文字 UI
         const container = document.getElementById('boss-sentence');
         container.innerHTML = state.bossData.words.map((w, i) => `<span id="bw-${i}">${w}</span>`).join(' ');
-        updateBossUI(); sfx.boss();
+        updateBossUI();
     }
 
     function updateBossUI() {
@@ -1284,7 +1352,23 @@
             const el = document.getElementById(`bw-${i}`);
             el.className = i < state.bossWordIndex ? 'text-zinc-600 line-through' : (i === state.bossWordIndex ? 'boss-word-active font-bold' : 'text-white');
         });
+        
+        // 血條顯示當前句子的進度
         document.getElementById('boss-hp-bar').style.width = (100 - (state.bossWordIndex/state.bossData.words.length*100)) + '%';
+        
+        // 更新階段指示器文字
+        const phaseEl = document.getElementById('boss-phase-display');
+        const remaining = state.bossSentencesRequired - state.bossSentencesCleared;
+        phaseEl.innerText = `PHASE: ${state.bossSentencesCleared + 1} / ${state.bossSentencesRequired}`;
+        
+        // 如果只剩最後一句，字體變紅變大
+        if (remaining <= 1) {
+            phaseEl.classList.add('text-red-500', 'flicker');
+            phaseEl.innerText += " [FINISH HIM!]";
+        } else {
+            phaseEl.classList.remove('text-red-500', 'flicker');
+            phaseEl.classList.add('text-yellow-500');
+        }
     }
 
     function hitBoss() {
@@ -1294,7 +1378,7 @@
         state.score += scoreGain;
 
         if (Math.random() < bossParams.criticalChance) {
-            if (state.enemies[0]) state.enemies[0].z = Math.max(0.1, state.enemies[0].z - bossParams.pushback);
+            if (state.enemies[0]) state.enemies[0].z = Math.max(0.05, state.enemies[0].z - bossParams.pushback);
             state.shake = 50; state.freezeTimer = bossParams.stunDuration;
             const toast = document.getElementById('reward-toast');
             toast.innerText = "BOSS STUNNED!"; toast.classList.add('toast-active');
@@ -1303,17 +1387,34 @@
             sfx.reward(); 
         } else {
             state.shake = 20; 
-            if (state.enemies[0]) state.enemies[0].z = Math.max(0.2, state.enemies[0].z - 0.1); 
+            // 普攻推後一點點，保持距離感
+            if (state.enemies[0]) state.enemies[0].z = Math.max(0.1, state.enemies[0].z - 0.05); 
         }
         createExplosion(state.enemies[0]); sfx.kill();
+        
+        // 句子念完的判斷
         if (state.bossWordIndex >= state.bossData.words.length) {
-            state.enemies[0].isDying = true; state.bossesDefeated++;
-            executeReward('RECOVER');
-            setTimeout(() => {
-                const required = BOSS_QUOTAS[state.difficultyMode] || 1;
-                if (state.bossesDefeated < required) startBossBattle(); else winGame(); 
-            }, 800);
-        } else updateBossUI();
+            state.bossSentencesCleared++;
+            executeReward('RECOVER'); // 維持補血機制
+
+            // 推後 BOSS (獎勵時間)
+            const pushBackAmt = BOSS_BEHAVIOR.pushback[state.difficultyMode] || 0.3;
+            if (state.enemies[0]) state.enemies[0].z = Math.max(0.1, state.enemies[0].z - pushBackAmt);
+
+            if (state.bossSentencesCleared >= state.bossSentencesRequired) {
+                // 真正擊殺
+                state.enemies[0].isDying = true; 
+                state.bossesDefeated++; // 統計用
+                winGame();
+            } else {
+                // 下一個階段 (下一句)
+                setTimeout(() => {
+                    loadNextBossSentence();
+                }, 500); // 稍微停頓讓玩家喘息
+            }
+        } else {
+            updateBossUI();
+        }
     }
 
     function createExplosion(en) {
@@ -1328,8 +1429,8 @@
         state.hp--; state.shake = survivalConfig.damageShake; state.combo = 0; state.damageTaken++; 
         sfx.damage(); state.damageAlpha = 0.8; 
         if (state.bossMode && state.enemies[0]) {
-            const pushback = BOSS_BEHAVIOR.pushback[state.difficultyMode] || 0.5;
-            state.enemies[0].z = pushback; 
+            // 受傷時不大幅推後 BOSS，增加難度
+            state.enemies[0].z = Math.max(0.1, state.enemies[0].z - 0.1); 
         }
         if (state.hp <= 0) endGame();
     }
@@ -1404,8 +1505,8 @@
         }
         const target = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
         let t = "AWAITING...";
-        const required = BOSS_QUOTAS[state.difficultyMode] || 1;
-        if (state.bossMode) t = `BOSS STAGE (${state.bossesDefeated+1}/${required})`;
+        // 修改：UI 顯示改為顯示剩餘句數
+        if (state.bossMode) t = `BOSS THREAT LEVEL: ${state.bossSentencesCleared}/${state.bossSentencesRequired}`;
         else if (target) t = target.word.toUpperCase();
         document.getElementById('current-word-ui').innerText = t;
     }
