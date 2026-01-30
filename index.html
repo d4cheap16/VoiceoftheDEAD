@@ -1380,19 +1380,19 @@
         const ecgLine = document.querySelector('.ecg-line');
         
         if (state.hp > 3) { 
-            status.innerText = 'VITAL: STABLE'; 
+            status.innerText = 'STABLE'; 
             status.className = 'pixel-font text-green-500 text-[8px] font-bold'; 
             ecgPath.setAttribute('stroke', 'lime');
             ecgLine.style.animationDuration = "2s";
         }
         else if (state.hp > 1) { 
-            status.innerText = 'VITAL: CAUTION'; 
+            status.innerText = 'CAUTION'; 
             status.className = 'pixel-font text-yellow-500 text-[8px] font-bold'; 
             ecgPath.setAttribute('stroke', 'yellow');
             ecgLine.style.animationDuration = "1s"; 
         }
         else { 
-            status.innerText = 'VITAL: CRITICAL'; 
+            status.innerText = 'DANGER'; 
             status.className = 'pixel-font text-red-600 text-[8px] font-bold flicker'; 
             ecgPath.setAttribute('stroke', 'red');
             ecgLine.style.animationDuration = "0.5s"; 
