@@ -448,10 +448,10 @@
 
     /* --- BOSS 戰參數設定區 (已調整起始距離與速度平衡) --- */
     const BOSS_CONFIG_DATA = {
-        'Rookie':    { startZ: 0.30, speed: 0.0008, sentencesRequired: 1 }, 
-        'Veteran':   { startZ: 0.25, speed: 0.0012, sentencesRequired: 2 },
-        'Nightmare': { startZ: 0.20, speed: 0.0018, sentencesRequired: 3 },
-        'NoHope':    { startZ: 0.10, speed: 0.0025, sentencesRequired: 5 }
+        'Rookie':    { startZ: 0.40, speed: 0.0020, sentencesRequired: 2 }, 
+        'Veteran':   { startZ: 0.35, speed: 0.0030, sentencesRequired: 3 },
+        'Nightmare': { startZ: 0.30, speed: 0.0040, sentencesRequired: 4 },
+        'NoHope':    { startZ: 0.20, speed: 0.0055, sentencesRequired: 5 }
     };
 
     const BOSS_BEHAVIOR = { 
@@ -1354,6 +1354,11 @@
         boss.z = bConfig.startZ; // 使用設定的起始距離
         state.enemies = [boss];
         
+        // --- 修正：強制解凍 ---
+        // 在一般模式下，殺死最後一隻小怪可能觸發獎勵(如FLASH/SHOTGUN)，導致freezeTimer > 0。
+        // BOSS 出場時必須無視之前的凍結狀態，否則會呆站幾秒。
+        state.freezeTimer = 0;
+
         loadNextBossSentence();
         
         document.getElementById('boss-ui').style.opacity = '1';
