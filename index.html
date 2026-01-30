@@ -8,7 +8,7 @@
     
     <title>Dead Don't Talk</title>
     <meta name="description" content="Want to Survive? Speak!">
-    <meta property="og:title" content="Dead don't talk, but you do.">
+    <meta property="og:title" content="Speak your way out. - Dead Don't Talk">
     <meta property="og:description" content="用聲音在末日中生存。">
     <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
     <meta property="og:image" content="https://d4cheap16.github.io/tddt/opentag.png">
@@ -97,6 +97,7 @@
         }
         select:focus, input:focus { border-color: #0f0 !important; }
 
+        /* 隱藏數字輸入框的上下箭頭 */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
@@ -144,6 +145,7 @@
         }
         .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
 
+        /* 獎勵提示樣式：大字體風格 */
         #reward-toast {
             position: absolute; 
             top: 25%; 
@@ -154,7 +156,7 @@
             transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0; 
             transform: scale(0.5);
-            font-size: 24px; 
+            font-size: 28px; 
             font-weight: 700;
             color: #fff; 
             text-shadow: 0 0 15px currentColor; 
@@ -182,6 +184,7 @@
         }
         .flicker { animation: flicker 0.15s infinite; }
         
+        /* 完美通關特效 */
         @keyframes shine { 
             0% { transform: scale(1); text-shadow: 0 0 10px gold; } 
             50% { transform: scale(1.1); text-shadow: 0 0 30px yellow, 0 0 50px orange; } 
@@ -198,6 +201,7 @@
             display: none; /* 預設隱藏 */
         }
 
+        /* Debug Panel 樣式 (靠右對齊，避免遮擋) */
         #debug-panel {
             position: absolute; top: 0; right: 0; width: 100%; height: 100%;
             background: transparent; pointer-events: none; z-index: 300;
@@ -222,6 +226,7 @@
         .debug-btn:hover { background: #005500; }
         .debug-info { font-family: monospace; white-space: pre-wrap; margin-top: 10px; color: #aaa; font-size: 7px; max-height: 200px; overflow-y: auto;}
 
+        /* 心電圖動畫 */
         .ecg-container {
             width: 100%; height: 30px;
             background: #000;
@@ -300,6 +305,7 @@
             <input type="number" id="input-no" placeholder="NUMBER" class="input-retro">
             <input type="text" id="input-name" placeholder="NAME" class="input-retro">
             <p class="text-[8px] text-zinc-600 mt-4 mb-1 uppercase px-1">Challenge Level</p>
+            <!-- 難度按鈕：移除括號文字 -->
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="setDifficulty(0.7, 'Rookie')" class="btn diff-btn diff-rookie" id="diff-rookie">Rookie</button>
                 <button onclick="setDifficulty(1.0, 'Veteran')" class="btn diff-btn diff-veteran active-diff" id="diff-veteran">Veteran</button>
@@ -340,7 +346,7 @@
         </div>
     </div>
 
-    <!-- Debug 面板 -->
+    <!-- Debug 面板 (遊戲中顯示) -->
     <div id="debug-panel" class="hidden flex-col items-end justify-start">
         <div class="debug-controls">
             <div class="text-[10px] mb-2 font-bold uppercase text-center border-b border-green-500 pb-1">Debug Controls</div>
@@ -474,17 +480,26 @@
 
     const BOSS_QUOTAS = { 'Rookie': 1, 'Veteran': 2, 'Nightmare': 3, 'NoHope': 5 };
 
+    // 新增：進入 BOSS 戰所需的殺敵數 (累積殺敵達到此數值時召喚 BOSS)
+    const BOSS_TRIGGER_KILLS = {
+        'Rookie': 10,    
+        'Veteran': 15,   
+        'Nightmare': 20, // 修正：Nightmare 增加到 25
+        'NoHope': 30     // 修正：NoHope 增加到 40
+    };
+
+    // 提高 Boss 基礎速度
     const BOSS_SPEEDS = {
-        'Rookie': 0.0010,    
-        'Veteran': 0.0013,   
+        'Rookie': 0.0008,    
+        'Veteran': 0.0012,   
         'Nightmare': 0.0018, 
-        'NoHope': 0.0025     
+        'NoHope': 0.0023     
     };
 
     // 新增：一般敵人行為參數 (控制最後衝刺)
     const ENEMY_BEHAVIOR = {
         sprintZ: 0.75,       // 當距離 > 0.75 時開始衝刺
-        sprintMultiplier: 1.5 // 速度提升 1.5 倍
+        sprintMultiplier: 1.3 // 速度提升 1.5 倍
     };
 
     const BOSS_BEHAVIOR = {
@@ -500,8 +515,8 @@
 
     const ENEMY_SPEEDS = {
         'Rookie':   { min: 0.0005, max: 0.0010 },
-        'Veteran':  { min: 0.0008, max: 0.0016 },
-        'Nightmare':{ min: 0.0012, max: 0.0020 },
+        'Veteran':  { min: 0.0008, max: 0.0015 },
+        'Nightmare':{ min: 0.0012, max: 0.0018 },
         'NoHope':   { min: 0.0020, max: 0.0030 }
     };
 
@@ -786,7 +801,7 @@
         
         // 填充參數列表
         const paramDiv = document.getElementById('debug-params');
-        paramDiv.innerText = `REWARD_CONFIG = ${JSON.stringify(REWARD_CONFIG, null, 2)}\n\nBOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}\n\nBOSS_BEHAVIOR = ${JSON.stringify(BOSS_BEHAVIOR, null, 2)}\n\nENEMY_BEHAVIOR = ${JSON.stringify(ENEMY_BEHAVIOR, null, 2)}`;
+        // paramDiv.innerText = `REWARD_CONFIG = ${JSON.stringify(REWARD_CONFIG, null, 2)}\n\nBOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}`;
         
         startGame();
     };
@@ -1120,6 +1135,9 @@
         const en = state.enemies[idx]; if(!en) return;
         en.isDying = true; 
         
+        // 修改 trigger logic 以使用新定義的 BOSS_TRIGGER_KILLS 參數
+        const requiredKills = BOSS_TRIGGER_KILLS[state.difficultyMode] || 15;
+        
         let scoreGain = (100 + (state.combo * 10)) * state.difficulty;
         state.score += scoreGain;
 
@@ -1135,14 +1153,11 @@
         }
 
         createExplosion(en); state.shake = 10; sfx.kill();
-        let trigger = false;
-        
-        if(state.difficultyMode==='Rookie' && state.kills>=10) trigger=true;
-        else if(state.difficultyMode==='Veteran' && state.kills>=15) trigger=true;
-        else if(state.difficultyMode==='Nightmare' && state.kills>=15) trigger=true;
-        else if(state.difficultyMode==='NoHope' && state.kills>=10) trigger=true;
-        
-        if(trigger && !state.bossMode) startBossBattle();
+
+        // 檢查 Boss 觸發條件
+        if (state.kills >= requiredKills && !state.bossMode) {
+            startBossBattle();
+        }
     }
 
     function startBossBattle() {
