@@ -152,13 +152,11 @@
 
         #boss-ui {
             position: absolute; 
-            /* 修改：將 BOSS UI 從 bottom: 20px 往上提，對齊 Canvas 底部 */
             bottom: 36%; 
             left: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
             pointer-events: none; transition: opacity 0.5s; opacity: 0;
             z-index: 150;
-            /* 增加底部 padding 讓它懸浮在 UI 面板上方 */
             padding-bottom: 20px;
         }
         .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
@@ -199,20 +197,32 @@
         }
 
         #debug-panel {
-            position: absolute; top: 0; right: 0; width: 100%; height: 100%;
-            background: transparent; pointer-events: none; z-index: 300; padding: 10px;
+            position: absolute; top: 10px; right: 10px; width: auto; height: auto;
+            background: transparent; pointer-events: none; z-index: 300;
         }
         .debug-controls {
-            pointer-events: auto; background: rgba(0,0,0,0.8); border: 1px solid #0f0;
-            padding: 10px; border-radius: 8px; max-width: 200px;
-            margin-top: 40px; font-size: 8px; color: #0f0;
+            pointer-events: auto; background: rgba(0,0,0,0.6); 
+            border: 1px solid #333;
+            padding: 5px; border-radius: 50px; 
+            display: flex; gap: 8px; flex-direction: row;
         }
         .debug-btn {
-            background: #003300; border: 1px solid #0f0; color: #0f0;
-            padding: 5px; margin: 2px 0; width: 100%; cursor: pointer; text-align: left;
+            width: 32px; height: 32px;
+            background: #222; border: 2px solid #555; color: #fff;
+            padding: 0; margin: 0; cursor: pointer; 
+            font-size: 10px; font-weight: bold; font-family: 'Press Start 2P', cursive;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s;
         }
-        .debug-btn:hover { background: #005500; }
-        .debug-info { font-family: monospace; white-space: pre-wrap; margin-top: 10px; color: #aaa; font-size: 7px; max-height: 200px; overflow-y: auto;}
+        .debug-btn:active { transform: scale(0.9); }
+        .dbg-heal { border-color: #00ff00; color: #00ff00; }
+        .dbg-flash { border-color: #00ffff; color: #00ffff; }
+        .dbg-shot { border-color: #ffff00; color: #ffff00; }
+        .dbg-crit { border-color: #ff00ff; color: #ff00ff; }
+        .dbg-kill { border-color: #ff0000; color: #ff0000; background: #330000; }
+        .dbg-exit { border-color: #ffffff; color: #ffffff; background: #333; font-size: 8px; }
+        .debug-info { display: none; }
 
         .ecg-container {
             width: 100%; height: 30px; background: #000; border: 1px solid #222;
@@ -317,16 +327,14 @@
 
     <div id="debug-panel" class="hidden flex-col items-end justify-start">
         <div class="debug-controls">
-            <div class="text-[10px] mb-2 font-bold uppercase text-center border-b border-green-500 pb-1">Debug Controls</div>
-            <button onclick="debugTrigger('RECOVER')" class="debug-btn">1. Trigger Heal (+HP)</button>
-            <button onclick="debugTrigger('FLASH')" class="debug-btn">2. Trigger Flash (Freeze)</button>
-            <button onclick="debugTrigger('SHOTGUN')" class="debug-btn">3. Trigger Shotgun (Push)</button>
-            <button onclick="debugCritical()" class="debug-btn text-purple-400 border-purple-500">4. Trigger Critical (Wipe)</button>
-            <button onclick="startBossBattle()" class="debug-btn text-red-400 border-red-500">5. Spawn BOSS</button>
-            <button onclick="exitDebugMode()" class="debug-btn bg-red-900 border-red-500 text-white mt-4 font-bold text-center hover:bg-red-700">EXIT TEST (RELOAD)</button>
-            <div class="mt-2 text-[7px] text-zinc-400">PARAMETERS:</div>
-            <div id="debug-params" class="debug-info"></div>
+            <button onclick="debugTrigger('RECOVER')" class="debug-btn dbg-heal" title="Heal">H</button>
+            <button onclick="debugTrigger('FLASH')" class="debug-btn dbg-flash" title="Flash">F</button>
+            <button onclick="debugTrigger('SHOTGUN')" class="debug-btn dbg-shot" title="Shotgun">S</button>
+            <button onclick="debugCritical()" class="debug-btn dbg-crit" title="Critical Wipe">K</button>
+            <button onclick="debugKillClosest()" class="debug-btn dbg-kill" title="Kill/Hit Closest">X</button>
+            <button onclick="exitDebugMode()" class="debug-btn dbg-exit" title="Exit">Ex</button>
         </div>
+        <div id="debug-params" class="debug-info"></div>
     </div>
 
     <div id="pause-screen" class="overlay-screen hidden">
@@ -494,7 +502,7 @@
             'Rookie':    { deathZ: 0.95, bossShakeZ: 0.5 },
             'Veteran':   { deathZ: 0.90, bossShakeZ: 0.4 },
             'Nightmare': { deathZ: 0.85, bossShakeZ: 0.3 },
-            'NoHope':    { deathZ: 0.85, bossShakeZ: 0.2 }
+            'NoHope':    { deathZ: 0.80, bossShakeZ: 0.2 }
         }
     };
 
@@ -847,6 +855,19 @@
 
     window.debugTrigger = (key) => { executeReward(key); };
     window.debugCritical = () => { triggerCriticalWipe(); };
+    window.debugKillClosest = () => {
+        const alive = state.enemies.filter(e => !e.isDying);
+        if (alive.length > 0) {
+            alive.sort((a,b) => b.z - a.z);
+            const target = alive[0];
+            
+            if (state.bossMode) {
+                 hitBoss();
+            } else {
+                 killEnemy(state.enemies.indexOf(target));
+            }
+        }
+    };
 
     window.handleClearData = async () => {
         const btn = document.getElementById('clear-data-btn');
