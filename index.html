@@ -446,12 +446,27 @@
         "https://d4cheap16.github.io/tddt/BG05.png"
     ];
 
-    /* --- BOSS 戰參數設定區 (已調整起始距離與速度平衡) --- */
+    /* --- [教學] BOSS 戰參數設定區 --- */
+    // 這裡調整 BOSS 的「速度」與「起始距離」。
+    // 速度 (speed) 越低，BOSS 走得越慢，玩家存活時間越長。
+    // 建議：考慮到語音延遲，建議將速度稍微調慢一點點。
     const BOSS_CONFIG_DATA = {
-        'Rookie':    { startZ: 0.10, speed: 0.0015, sentencesRequired: 2 }, 
-        'Veteran':   { startZ: 0.10, speed: 0.0018, sentencesRequired: 3 },
-        'Nightmare': { startZ: 0.15, speed: 0.0020, sentencesRequired: 4 },
-        'NoHope':    { startZ: 0.15, speed: 0.0015, sentencesRequired: 5 }
+        'Rookie':    { startZ: 0.10, speed: 0.0015, sentencesRequired: 2 }, // 速度由 0.0015 降為 0.0012 (更簡單)
+        'Veteran':   { startZ: 0.10, speed: 0.0016, sentencesRequired: 3 }, // 速度由 0.0018 降為 0.0016 (平衡)
+        'Nightmare': { startZ: 0.10, speed: 0.0019, sentencesRequired: 4 }, // 速度由 0.0020 降為 0.0019 (考慮延遲)
+        'NoHope':    { startZ: 0.10, speed: 0.0014, sentencesRequired: 5 }  // 速度由 0.0015 降為 0.0014 (極限生存)
+    };
+
+    /* --- [教學] BOSS 震動參數設定區 (新增) --- */
+    // 這裡獨立設定每個難度的震動效果
+    // startZ: BOSS 走到多近開始震動 (0.1 = 很遠不震, 0.5 = 走到一半開始震, 0.8 = 貼臉才震)
+    // intensity: 震動強烈程度 (數值越大越晃)
+    // axis: 'Y' = 只有上下震動, 'XY' = 上下左右亂震 (更暈)
+    const BOSS_SHAKE_CONFIG = {
+        'Rookie':    { startZ: 0.5, intensity: 10, axis: 'Y' },  // 輕微上下晃動
+        'Veteran':   { startZ: 0.4, intensity: 20, axis: 'Y' },  // 中等上下晃動
+        'Nightmare': { startZ: 0.3, intensity: 40, axis: 'XY' }, // 強烈亂震 (增加壓迫感)
+        'NoHope':    { startZ: 0.2, intensity: 60, axis: 'XY' }  // 極度強烈亂震 (從很遠就開始)
     };
 
     const BOSS_BEHAVIOR = { 
@@ -493,10 +508,10 @@
             'NoHope':    { maxHP: 3, damageShake: 60 }
         },
         THRESHOLDS: {
-            'Rookie':    { deathZ: 0.95, bossShakeZ: 0.5 },
-            'Veteran':   { deathZ: 0.90, bossShakeZ: 0.4 },
-            'Nightmare': { deathZ: 0.85, bossShakeZ: 0.3 },
-            'NoHope':    { deathZ: 0.80, bossShakeZ: 0.2 }
+            'Rookie':    { deathZ: 0.95 },
+            'Veteran':   { deathZ: 0.90 },
+            'Nightmare': { deathZ: 0.85 },
+            'NoHope':    { deathZ: 0.80 }
         }
     };
 
@@ -521,7 +536,7 @@
     };
     
     // 當擊殺多少敵人後觸發 BOSS
-    const BOSS_TRIGGER_KILLS = { 'Rookie': 10, 'Veteran': 15, 'Nightmare': 20, 'NoHope': 30 };
+    const BOSS_TRIGGER_KILLS = { 'Rookie': 10, 'Veteran': 13, 'Nightmare': 15, 'NoHope': 20 };
 
     const sfx = {
         ctx: null,
@@ -1491,13 +1506,29 @@
             state.shake *= 0.88; if(state.shake < 0.5) state.shake = 0;
         }
         const boss = state.enemies.find(e => e.isBoss);
-        const thresholds = GAME_BALANCE.THRESHOLDS[state.difficultyMode] || GAME_BALANCE.THRESHOLDS['Veteran']; // Get current thresholds
         
-        if (state.bossMode && boss && boss.z > thresholds.bossShakeZ) {
-            const proximityIntensity = (boss.z - thresholds.bossShakeZ) * 20; 
-            const shakeY = (Math.random() - 0.5) * proximityIntensity;
-            ctx.translate(0, shakeY);
+        // --- [修改] BOSS 震動邏輯區 (讀取新參數) ---
+        if (state.bossMode && boss) {
+            const shakeConfig = BOSS_SHAKE_CONFIG[state.difficultyMode] || BOSS_SHAKE_CONFIG['Veteran'];
+            
+            // 只有當 BOSS 距離大於設定值時才震動
+            if (boss.z > shakeConfig.startZ) {
+                const proximityIntensity = (boss.z - shakeConfig.startZ) * shakeConfig.intensity;
+                
+                // 根據 axis 參數決定震動方向
+                if (shakeConfig.axis === 'XY') {
+                    // X 和 Y 軸一起震動 (暈眩感強)
+                    const shakeX = (Math.random() - 0.5) * proximityIntensity;
+                    const shakeY = (Math.random() - 0.5) * proximityIntensity;
+                    ctx.translate(shakeX, shakeY);
+                } else {
+                    // 只有 Y 軸震動 (腳步沉重感)
+                    const shakeY = (Math.random() - 0.5) * proximityIntensity;
+                    ctx.translate(0, shakeY);
+                }
+            }
         }
+
         if (state.freezeTimer > 0) state.freezeTimer--;
         ctx.fillStyle = "#222";
         state.bgStars.forEach(s => {
