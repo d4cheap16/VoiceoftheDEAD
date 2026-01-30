@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <link rel="icon" href="https://d4cheap16.github.io/VoiceoftheDEAD/zombie.png" type="image/png">
+    <link rel="icon" href="https://d4cheap16.github.io/tddt/zombie.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <title>Voice of the Dead</title>
+    <title>The Dead don't talk?</title>
     <meta name="description" content="Want to Survive? Speak!">
-    <meta property="og:title" content="Speak your way out. - Voice of the Dead">
+    <meta property="og:title" content="The dead don't talk, but you do.">
     <meta property="og:description" content="用聲音在末日中生存。">
-    <meta property="og:image" content="https://d4cheap16.github.io/VoiceoftheDEAD/opentag.png">
+    <meta property="og:image" content="https://d4cheap16.github.io/tddt/opentag.png">
     <meta property="og:type" content="website">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -143,29 +143,26 @@
         }
         .boss-word-active { color: #0f0; text-shadow: 0 0 10px #0f0; transform: scale(1.05); }
 
+        /* 修改後的獎勵提示樣式：更接近死亡畫面的大標題風格 */
         #reward-toast {
             position: absolute; 
-            top: 20%; 
-            width: 90%; 
-            left: 5%;
+            top: 25%; 
+            width: 100%; 
             text-align: center;
             pointer-events: none; 
             z-index: 250; 
-            transition: 0.3s;
+            transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0; 
-            transform: translateY(30px) scale(0.8);
-            font-size: 14px; 
+            transform: scale(0.5);
+            font-size: 24px; /* 加大字體 */
+            font-weight: 700;
             color: #fff; 
-            text-shadow: 0 0 10px #000;
-            background: rgba(0, 0, 0, 0.85);
-            border: 2px solid #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 15px currentColor; /* 光暈效果 */
             font-family: 'Press Start 2P', cursive;
             line-height: 1.5;
+            padding: 0 10px;
         }
-        .toast-active { opacity: 1; transform: translateY(0) scale(1); }
+        .toast-active { opacity: 1; transform: scale(1); }
 
         .admin-table-container {
             width: 100%; max-height: 250px; overflow-y: auto; font-size: 9px;
@@ -176,8 +173,14 @@
 
         #leaderboard-preview { width: 100%; margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
 
-        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .flicker { animation: flicker 0.2s infinite; }
+        @keyframes flicker { 
+            0% { opacity: 1; } 
+            25% { opacity: 0.8; }
+            50% { opacity: 1; }
+            75% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .flicker { animation: flicker 0.15s infinite; }
         
         /* 完美通關特效 */
         @keyframes shine { 
@@ -196,12 +199,11 @@
             display: none; /* 預設隱藏 */
         }
 
-        /* Debug Panel 樣式 (移除 display: flex，避免覆蓋 hidden) */
+        /* Debug Panel 樣式 (靠右對齊，避免遮擋) */
         #debug-panel {
             position: absolute; top: 0; right: 0; width: 100%; height: 100%;
             background: transparent; pointer-events: none; z-index: 300;
             padding: 10px;
-            /* 修正：移除 flex 設定，改由 HTML class 控制 */
         }
         .debug-controls {
             pointer-events: auto;
@@ -260,9 +262,10 @@
     <!-- 1. 任務選擇 -->
     <div id="mission-screen" class="overlay-screen">
         <div class="banner-box">
-            <img src="https://d4cheap16.github.io/VoiceoftheDEAD/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
+            <img src="https://d4cheap16.github.io/tddt/indexbanner.png" alt="Index Banner" onerror="this.style.display='none'">
         </div>
-        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Voice of the Dead</h1>
+        <!-- 修正標題 -->
+        <h1 class="text-md mb-6 text-red-600 tracking-tighter flicker uppercase">Dead Don't Talk</h1>
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
             <div class="grid grid-cols-5 gap-1 mb-6" id="book-grid"></div>
@@ -282,7 +285,7 @@
     <!-- 2. 登錄與難度 -->
     <div id="login-screen" class="overlay-screen hidden">
         <div class="banner-box">
-            <img src="https://d4cheap16.github.io/VoiceoftheDEAD/missionbanner.png" alt="Mission Banner" onerror="this.style.display='none'">
+            <img src="https://d4cheap16.github.io/tddt/missionbanner.png" alt="Mission Banner" onerror="this.style.display='none'">
         </div>
         <h2 id="selected-mission-title" class="text-blue-500 mb-6 text-[11px] uppercase tracking-widest">MISSION ID</h2>
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm space-y-4 rounded-lg text-left">
@@ -340,7 +343,6 @@
     </div>
 
     <!-- Debug 面板 (遊戲中顯示) -->
-    <!-- 修正：移除 flex，改用 class 控制 -->
     <div id="debug-panel" class="hidden flex-col items-end justify-start">
         <div class="debug-controls">
             <div class="text-[10px] mb-2 font-bold uppercase text-center border-b border-green-500 pb-1">Debug Controls</div>
@@ -350,7 +352,6 @@
             <button onclick="debugCritical()" class="debug-btn text-purple-400 border-purple-500">4. Trigger Critical (Wipe)</button>
             <button onclick="startBossBattle()" class="debug-btn text-red-400 border-red-500">5. Spawn BOSS</button>
             
-            <!-- 文字改回 EXIT TEST (RELOAD)，功能仍是重整 -->
             <button onclick="exitDebugMode()" class="debug-btn bg-red-900 border-red-500 text-white mt-4 font-bold text-center hover:bg-red-700">EXIT TEST (RELOAD)</button>
 
             <div class="mt-2 text-[7px] text-zinc-400">PARAMETERS:</div>
@@ -466,11 +467,11 @@
     
     // 背景圖清單
     const BGS = [
-        "https://d4cheap16.github.io/VoiceoftheDEAD/BG01.png",
-        "https://d4cheap16.github.io/VoiceoftheDEAD/BG02.png",
-        "https://d4cheap16.github.io/VoiceoftheDEAD/BG03.png",
-        "https://d4cheap16.github.io/VoiceoftheDEAD/BG04.png",
-        "https://d4cheap16.github.io/VoiceoftheDEAD/BG05.png"
+        "https://d4cheap16.github.io/tddt/BG01.png",
+        "https://d4cheap16.github.io/tddt/BG02.png",
+        "https://d4cheap16.github.io/tddt/BG03.png",
+        "https://d4cheap16.github.io/tddt/BG04.png",
+        "https://d4cheap16.github.io/tddt/BG05.png"
     ];
 
     const BOSS_QUOTAS = { 'Rookie': 1, 'Veteran': 2, 'Nightmare': 3, 'NoHope': 5 };
@@ -484,38 +485,39 @@
 
     const ENEMY_SPEEDS = {
         'Rookie':   { min: 0.0005, max: 0.0010 },
-        'Veteran':  { min: 0.0008, max: 0.0016 },
-        'Nightmare':{ min: 0.0012, max: 0.0020 },
+        'Veteran':  { min: 0.0008, max: 0.0015 },
+        'Nightmare':{ min: 0.0013, max: 0.0020 },
         'NoHope':   { min: 0.0020, max: 0.0030 }
     };
 
     const REWARD_CONFIG = {
         'RECOVER': {
-            text: "RECOVER",
+            text: "RECOVER!",
             textColor: "#4ade80", 
-            borderColor: "#4ade80",
-            boxShadow: "0 0 25px rgba(74, 222, 128, 0.6)",
+            // 移除外框線，使用大字體和陰影取代
+            // borderColor: "#4ade80", 
+            boxShadow: "none", 
             overlayColor: "rgba(0, 255, 0, 0.5)", 
             overlayDuration: 600, 
             effect: (state) => { state.hp = Math.min(5, state.hp + 1); }
         },
         'FLASH': {
-            text: "FLASH!",
+            text: "PRESENT FOR YOU!",
             textColor: "#67e8f9", 
-            borderColor: "#67e8f9",
-            boxShadow: "0 0 25px rgba(103, 232, 249, 0.6)",
-            overlayColor: "white",
+            // borderColor: "#67e8f9",
+            boxShadow: "none",
+            overlayColor: "rgba(255, 255, 255, 0.4)", // 修正：降低不透明度
             overlayDuration: 1500, 
             effect: (state) => { 
                 state.freezeTimer = 180; 
-                state.shake = 50; // 新增：閃光彈震動
+                state.shake = 50; 
             } 
         },
         'SHOTGUN': {
-            text: "SHOTGUN!",
+            text: "STAY BACK!",
             textColor: "#fbbf24", 
-            borderColor: "#fbbf24",
-            boxShadow: "0 0 25px rgba(251, 191, 36, 0.6)",
+            // borderColor: "#fbbf24",
+            boxShadow: "none",
             overlayColor: "rgba(255, 200, 50, 0.6)", 
             overlayDuration: 100, 
             effect: (state) => {
@@ -524,15 +526,15 @@
             }
         },
         'CRITICAL': {
-            text: "OVERKILL!!!",
+            text: "I NEVER MISS!",
             textColor: "#d946ef", 
-            borderColor: "#d946ef",
-            boxShadow: "0 0 40px rgba(217, 70, 239, 0.9)",
+            // borderColor: "#d946ef",
+            boxShadow: "none",
             overlayColor: "rgba(217, 70, 239, 0.6)", 
             overlayDuration: 800,
             effect: (state) => { 
                 state.hp = 5; 
-                state.shake = 70; // 增加強烈震動效果
+                state.shake = 65; 
             } 
         }
     };
@@ -796,14 +798,17 @@
         // 設定文字與樣式
         toast.innerText = conf.text;
         toast.style.color = conf.textColor;
-        toast.style.borderColor = conf.borderColor;
-        toast.style.boxShadow = conf.boxShadow;
+        // 移除邊框設定，因為 CSS 已改為文字為主
+        toast.style.borderColor = 'transparent'; 
+        toast.style.boxShadow = 'none';
+        toast.style.textShadow = `0 0 20px ${conf.textColor}`; // 使用配置的顏色作為光暈
         toast.classList.add('toast-active');
+        toast.classList.add('flicker'); // 加入閃爍動畫
 
         // 設定全螢幕閃光
         overlay.style.transition = `opacity ${conf.overlayDuration < 500 ? '0.1s' : '0.5s'} ease-out`;
         overlay.style.backgroundColor = conf.overlayColor;
-        overlay.style.opacity = key === 'FLASH' ? "1" : "0.8"; // FLASH 特別亮
+        overlay.style.opacity = key === 'FLASH' ? "1" : "0.8"; 
 
         // 執行實際遊戲邏輯效果
         if (conf.effect) conf.effect(state);
@@ -811,16 +816,16 @@
         // 淡出 Overlay
         setTimeout(() => {
             overlay.style.opacity = "0";
-        }, key === 'SHOTGUN' ? 100 : (key === 'FLASH' ? 1500 : 600)); // 特殊淡出時間
+        }, key === 'SHOTGUN' ? 100 : (key === 'FLASH' ? 1500 : 600)); 
 
         // 淡出 Toast 並重置
         setTimeout(() => {
             toast.classList.remove('toast-active');
+            toast.classList.remove('flicker');
             // 延遲重置樣式，避免閃爍
             setTimeout(() => {
                 toast.style.color = '#fff';
-                toast.style.borderColor = '#fff';
-                toast.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+                toast.style.textShadow = '0 0 10px #000';
                 overlay.style.backgroundColor = 'white';
             }, 500);
         }, 2000);
