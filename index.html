@@ -269,7 +269,7 @@
         <div class="bg-black p-5 border border-zinc-800 w-full max-w-sm rounded-lg shadow-2xl overflow-y-auto max-h-[75%]">
             <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Sector Access</p>
             <div class="grid grid-cols-5 gap-1 mb-6" id="book-grid"></div>
-            <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Unit Module</p>
+            <p class="text-[8px] text-zinc-500 mb-2 uppercase text-left font-bold">Unit</p>
             <div class="grid grid-cols-3 gap-1 mb-6" id="lesson-grid"></div>
             <div id="mission-status" class="text-[7px] text-zinc-400 mb-6 h-4 uppercase tracking-tighter">System Ready</div>
             
@@ -312,7 +312,7 @@
             </div>
             <div class="flex gap-2 mt-4">
                 <button onclick="backToMission()" class="btn w-1/3 text-[8px] uppercase">Back</button>
-                <button id="start-btn" onclick="handleAuth()" class="btn w-2/3 py-5 bg-red-950 border-red-700 text-red-500 uppercase">Initiate</button>
+                <button id="start-btn" onclick="handleAuth()" class="btn w-2/3 py-5 bg-red-950 border-red-700 text-red-500 uppercase">START</button>
             </div>
         </div>
     </div>
@@ -759,7 +759,7 @@
     window.selectLesson = (n) => {
         const data = currentBookData[`L${n}`];
         if (!data) {
-            document.getElementById('mission-status').innerText = `SECTOR ${n}: COMING SOON`;
+            document.getElementById('mission-status').innerText = `SECTOR ${n}: BLOCKED`;
             document.getElementById('leaderboard-preview').classList.add('hidden');
             return;
         }
