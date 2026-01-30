@@ -448,24 +448,24 @@
 
     /* --- BOSS 戰參數設定區 (已調整起始距離與速度平衡) --- */
     const BOSS_CONFIG_DATA = {
-        'Rookie':    { startZ: 0.40, speed: 0.0020, sentencesRequired: 2 }, 
-        'Veteran':   { startZ: 0.35, speed: 0.0030, sentencesRequired: 3 },
-        'Nightmare': { startZ: 0.30, speed: 0.0040, sentencesRequired: 4 },
-        'NoHope':    { startZ: 0.20, speed: 0.0055, sentencesRequired: 5 }
+        'Rookie':    { startZ: 0.20, speed: 0.0020, sentencesRequired: 2 }, 
+        'Veteran':   { startZ: 0.20, speed: 0.0030, sentencesRequired: 3 },
+        'Nightmare': { startZ: 0.25, speed: 0.0035, sentencesRequired: 4 },
+        'NoHope':    { startZ: 0.25, speed: 0.0040, sentencesRequired: 5 }
     };
 
     const BOSS_BEHAVIOR = { 
         sprintZ: 0.75, 
-        sprintMultiplier: 1.5, 
+        sprintMultiplier: 1.2, 
         pushback: { 'Rookie': 0.4, 'Veteran': 0.35, 'Nightmare': 0.3, 'NoHope': 0.25 }
     };
     
     // BOSS 戰鬥細節 (暈眩、擊退等)
     const BOSS_BATTLE_CONFIG = {
-        'Rookie':    { criticalChance: 0.05, stunDuration: 50,  pushback: 0.3, scoreMult: 2.0 },
-        'Veteran':   { criticalChance: 0.04, stunDuration: 40,  pushback: 0.25, scoreMult: 2.0 },
+        'Rookie':    { criticalChance: 0.05, stunDuration: 50,  pushback: 0.1, scoreMult: 2.0 },
+        'Veteran':   { criticalChance: 0.04, stunDuration: 40,  pushback: 0.2, scoreMult: 2.0 },
         'Nightmare': { criticalChance: 0.03, stunDuration: 35,  pushback: 0.2, scoreMult: 2.5 },
-        'NoHope':    { criticalChance: 0.01, stunDuration: 30,  pushback: 0.1, scoreMult: 3.0 }
+        'NoHope':    { criticalChance: 0.01, stunDuration: 30,  pushback: 0.3, scoreMult: 3.0 }
     };
 
     const ENEMY_SPEEDS = {
