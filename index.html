@@ -8,7 +8,7 @@
     
     <title>Dead Don't Talk</title>
     <meta name="description" content="Want to Survive? Speak!">
-    <meta property="og:title" content="Speak your way out. - Dead Don't Talk">
+    <meta property="og:title" content="Dead don't talk, but you do.">
     <meta property="og:description" content="用聲音在末日中生存。">
     <!-- 修改路徑：VoiceoftheDEAD -> tddt -->
     <meta property="og:image" content="https://d4cheap16.github.io/tddt/opentag.png">
@@ -156,7 +156,7 @@
             transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0; 
             transform: scale(0.5);
-            font-size: 28px; 
+            font-size: 30px; 
             font-weight: 700;
             color: #fff; 
             text-shadow: 0 0 15px currentColor; 
@@ -477,31 +477,60 @@
         "https://d4cheap16.github.io/tddt/BG04.png",
         "https://d4cheap16.github.io/tddt/BG05.png"
     ];
+    
+    // --- 遊戲平衡設定表 (GAME_BALANCE) ---
+    // 修改：將 COMBO 與 SURVIVAL 拆分為依照難度設定
+    const GAME_BALANCE = {
+        // 生成頻率 (毫秒) - 越低越快
+        SPAWN_RATES: { 
+            'Rookie': 2500, 
+            'Veteran': 2200, 
+            'Nightmare': 1800, 
+            'NoHope': 1500 
+        },
+        
+        // Combo 與分數系統 (Per Difficulty)
+        COMBO: {
+            'Rookie':    { rewardThreshold: 5, criticalChance: 0.05, baseScore: 100, comboMultiplier: 10 },
+            'Veteran':   { rewardThreshold: 7, criticalChance: 0.03, baseScore: 150, comboMultiplier: 12 },
+            'Nightmare': { rewardThreshold: 10, criticalChance: 0.02, baseScore: 200, comboMultiplier: 20 },
+            'NoHope':    { rewardThreshold: 15, criticalChance: 0.01, baseScore: 300, comboMultiplier: 30 }
+        },
+        
+        // 生存數值 (Per Difficulty)
+        SURVIVAL: {
+            'Rookie':    { maxHP: 6, damageShake: 20 }, // Rookie 血量較多
+            'Veteran':   { maxHP: 5, damageShake: 35 },
+            'Nightmare': { maxHP: 4, damageShake: 45 },
+            'NoHope':    { maxHP: 3, damageShake: 60 }  // No Hope 一擊必殺
+        },
 
-    const BOSS_QUOTAS = { 'Rookie': 1, 'Veteran': 2, 'Nightmare': 3, 'NoHope': 5 };
+        // 距離判定
+        DISTANCE_THRESHOLDS: {
+            deathZ: 1.0,           // 敵人撞擊玩家的距離
+            bossShakeZ: 0.4        // Boss 引起畫面震動的距離
+        }
+    };
 
-    // 新增：進入 BOSS 戰所需的殺敵數 (累積殺敵達到此數值時召喚 BOSS)
+    const BOSS_QUOTAS = { 'Rookie': 2, 'Veteran': 3, 'Nightmare': 4, 'NoHope': 5 };
+
+    // 進入 BOSS 戰所需的殺敵數 (累積殺敵達到此數值時召喚 BOSS)
     const BOSS_TRIGGER_KILLS = {
         'Rookie': 10,    
         'Veteran': 15,   
-        'Nightmare': 20, // 修正：Nightmare 增加到 25
-        'NoHope': 30     // 修正：NoHope 增加到 40
+        'Nightmare': 20, 
+        'NoHope': 30     
     };
 
-    // 提高 Boss 基礎速度
+    // BOSS 基礎速度
     const BOSS_SPEEDS = {
         'Rookie': 0.0008,    
         'Veteran': 0.0012,   
         'Nightmare': 0.0018, 
-        'NoHope': 0.0023     
+        'NoHope': 0.0020     
     };
 
-    // 新增：一般敵人行為參數 (控制最後衝刺)
-    const ENEMY_BEHAVIOR = {
-        sprintZ: 0.75,       // 當距離 > 0.75 時開始衝刺
-        sprintMultiplier: 1.3 // 速度提升 1.5 倍
-    };
-
+    // Boss 行為參數 (衝刺與擊退)
     const BOSS_BEHAVIOR = {
         sprintZ: 0.4, 
         sprintMultiplier: 3.0, 
@@ -513,13 +542,21 @@
         }
     };
 
+    // 一般敵人基礎速度範圍
     const ENEMY_SPEEDS = {
         'Rookie':   { min: 0.0005, max: 0.0010 },
         'Veteran':  { min: 0.0008, max: 0.0015 },
         'Nightmare':{ min: 0.0012, max: 0.0018 },
-        'NoHope':   { min: 0.0020, max: 0.0030 }
+        'NoHope':   { min: 0.0020, max: 0.0025 }
+    };
+    
+    // 一般敵人行為參數 (衝刺)
+    const ENEMY_BEHAVIOR = {
+        sprintZ: 0.75,       // 當距離 > 0.75 時開始衝刺
+        sprintMultiplier: 1.5 // 速度提升
     };
 
+    // 獎勵效果設定 (文字、顏色、震動等)
     const REWARD_CONFIG = {
         'RECOVER': {
             text: "RECOVER!",
@@ -528,7 +565,11 @@
             boxShadow: "none", 
             overlayColor: "rgba(110, 231, 183, 0.4)", 
             overlayDuration: 600, 
-            effect: (state) => { state.hp = Math.min(5, state.hp + 1); }
+            // 修改：使用當前難度的 maxHP
+            effect: (state) => { 
+                const maxHP = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP;
+                state.hp = Math.min(maxHP, state.hp + 1); 
+            }
         },
         'FLASH': {
             text: "PRESENT FOR YOU!",
@@ -558,8 +599,10 @@
             boxShadow: "none",
             overlayColor: "rgba(217, 70, 239, 0.6)", 
             overlayDuration: 800,
+            // 修改：使用當前難度的 maxHP
             effect: (state) => { 
-                state.hp = 5; 
+                const maxHP = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP;
+                state.hp = maxHP; 
                 state.shake = 60; 
             } 
         }
@@ -801,7 +844,7 @@
         
         // 填充參數列表
         const paramDiv = document.getElementById('debug-params');
-        // paramDiv.innerText = `REWARD_CONFIG = ${JSON.stringify(REWARD_CONFIG, null, 2)}\n\nBOSS_SPEEDS = ${JSON.stringify(BOSS_SPEEDS, null, 2)}\n\nENEMY_SPEEDS = ${JSON.stringify(ENEMY_SPEEDS, null, 2)}`;
+        // paramDiv.innerText = ...;
         
         startGame();
     };
@@ -943,12 +986,12 @@
                 }
                 else if (!state.bossMode) {
                      let s = this.speed;
-                     // Apply sprint logic to normal enemies too
+                     // Apply sprint logic to normal enemies too (Updated to use ENEMY_BEHAVIOR)
                      if (this.z > ENEMY_BEHAVIOR.sprintZ) s *= ENEMY_BEHAVIOR.sprintMultiplier;
                      this.z += s;
                 }
             }
-            return this.z >= 1;
+            return this.z >= GAME_BALANCE.DISTANCE_THRESHOLDS.deathZ;
         }
         draw(ctx, w, h, isClosest) {
             const scale = this.isBoss ? 2.5 : 1.0;
@@ -1052,7 +1095,9 @@
     function startGame(keepScore = false) {
         randomizeBackground(); 
         state.gameActive = true; 
-        state.hp = 5; 
+        // 修改：使用當前難度的 maxHP
+        state.hp = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP;
+        
         if (!keepScore) { state.score = 0; }
         state.kills = 0; 
         state.bossesDefeated = 0;
@@ -1138,16 +1183,20 @@
         // 修改 trigger logic 以使用新定義的 BOSS_TRIGGER_KILLS 參數
         const requiredKills = BOSS_TRIGGER_KILLS[state.difficultyMode] || 15;
         
-        let scoreGain = (100 + (state.combo * 10)) * state.difficulty;
+        // 修改：使用當前難度的 COMBO 參數
+        const comboConfig = GAME_BALANCE.COMBO[state.difficultyMode];
+        let scoreGain = (comboConfig.baseScore + (state.combo * comboConfig.comboMultiplier)) * state.difficulty;
         state.score += scoreGain;
 
         state.kills++; 
         
         if(!isAuto) {
             state.combo++;
-            if(state.combo > 0 && state.combo % 7 === 0) triggerReward();
+            // 修改：使用當前難度的 rewardThreshold
+            if(state.combo > 0 && state.combo % comboConfig.rewardThreshold === 0) triggerReward();
             
-            if (Math.random() < 0.01 && !state.bossMode) {
+            // 修改：使用當前難度的 criticalChance
+            if (Math.random() < comboConfig.criticalChance && !state.bossMode) {
                 triggerCriticalWipe();
             }
         }
@@ -1203,7 +1252,11 @@
     }
 
     function triggerDamage() {
-        state.hp--; state.shake = 35; state.combo = 0; 
+        // 修改：使用當前難度的 damageShake
+        const survivalConfig = GAME_BALANCE.SURVIVAL[state.difficultyMode];
+        state.hp--; 
+        state.shake = survivalConfig.damageShake; 
+        state.combo = 0; 
         state.damageTaken++; 
         sfx.damage();
         
@@ -1233,8 +1286,8 @@
         }
 
         const boss = state.enemies.find(e => e.isBoss);
-        if (state.bossMode && boss && boss.z > 0.4) {
-            const proximityIntensity = (boss.z - 0.4) * 20; 
+        if (state.bossMode && boss && boss.z > GAME_BALANCE.DISTANCE_THRESHOLDS.bossShakeZ) {
+            const proximityIntensity = (boss.z - GAME_BALANCE.DISTANCE_THRESHOLDS.bossShakeZ) * 20; 
             const shakeY = (Math.random() - 0.5) * proximityIntensity;
             ctx.translate(0, shakeY);
         }
@@ -1247,8 +1300,11 @@
             ctx.globalAlpha = 0.4 * s.z; ctx.fillRect(sx, sy, s.s, s.s); ctx.globalAlpha = 1;
             if (state.freezeTimer <= 0) s.z += 0.003; if (s.z > 1) s.z = 0;
         });
-
-        if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > 2200/state.difficulty) {
+        
+        // 使用 GAME_BALANCE.SPAWN_RATES
+        const spawnRate = GAME_BALANCE.SPAWN_RATES[state.difficultyMode] || 2200;
+        
+        if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > spawnRate) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
 
@@ -1342,7 +1398,7 @@
                 <div class="text-zinc-500">MISSION</div><div class="text-blue-400">Book ${selectedBook} - ${title}</div>
                 <div class="text-zinc-500">DIFFICULTY</div><div class="text-red-400">${state.difficultyMode}</div>
                 <div class="text-zinc-500">UNIT</div><div class="text-white">${state.player.class}</div>
-                <div class="text-zinc-500">OPERATOR</div><div class="text-white">${state.player.no}. ${state.player.name}</div>
+                <div class="text-zinc-500">AGENT</div><div class="text-white">${state.player.no}. ${state.player.name}</div>
                 <div class="text-zinc-500">DATE</div><div class="text-zinc-400">${dateStr}</div>
             </div>
         `;
