@@ -225,7 +225,7 @@
         }
         .game-credits p {
             font-family: 'Press Start 2P', cursive;
-            font-size: 7px;       /* 縮小字體 */
+            font-size: 10px;       /* 縮小字體 */
             color: #ffffff;          /* 白色 */
             margin: 0;
             text-transform: uppercase;
@@ -234,7 +234,7 @@
         .game-credits img {
             width: 20px;          /* 縮小 logo */
             height: auto;
-            gap: 7px;
+            gap: 6px;
             filter: drop-shadow(0 0 2px #000);
         }
     </style>
@@ -397,7 +397,7 @@
         </div>
     </div>
 
-    <!-- ★★★ Footer 已移至此處 (game-wrapper 內部) ★★★ -->
+    <!-- ★★★ Footer ★★★ -->
     <div class="game-credits">
         <p>Designed by CHENWEI with Gemini</p>
         <img src="https://d4cheap16.github.io/tddt/Gemini.png" alt="Google Gemini Logo">
@@ -492,7 +492,7 @@
             'Rookie':    { deathZ: 0.95 },
             'Veteran':   { deathZ: 0.90 },
             'Nightmare': { deathZ: 0.85 },
-            'NoHope':    { deathZ: 0.80 }
+            'NoHope':    { deathZ: 0.85 }
         }
     };
 
@@ -1237,7 +1237,11 @@
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!Speech) return;
         if (recognition) try { recognition.stop(); } catch(e) {}
-        recognition = new Speech(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+        recognition = new Speech(); 
+        recognition.continuous = true; 
+        recognition.interimResults = true; 
+        recognition.lang = 'en-US';
+        
         recognition.onresult = (e) => {
             if(!state.gameActive || state.isPaused) return;
             let finalTranscript = "";
@@ -1249,8 +1253,17 @@
             if(finalTranscript) processCommand(finalTranscript);
             else if(interimTranscript.length > 2) processCommand(interimTranscript);
         };
-        recognition.onend = () => { if(state.gameActive && !state.isPaused) try { recognition.start(); } catch(e){} };
-        recognition.start();
+
+        // ★★★ FIX: 防止無限遞迴導致崩潰，加入延遲 ★★★
+        recognition.onend = () => { 
+            if(state.gameActive && !state.isPaused) {
+                setTimeout(() => {
+                    try { recognition.start(); } catch(e){} 
+                }, 300); // 300ms 冷卻
+            }
+        };
+        
+        try { recognition.start(); } catch(e){}
     }
 
     let lastMatchedWord = "";
@@ -1269,15 +1282,25 @@
 
         if (state.bossMode) {
             const target = clean(state.bossData.words[state.bossWordIndex]);
-            if (input.includes(target)) { 
+            // ★★★ FIX: 更嚴格的比對，避免 "wait" 觸發 "it" ★★★
+            const regex = new RegExp(`(^|\\s)${target}($|\\s)`);
+            if (regex.test(input) || input.includes(target)) { // 保持一點彈性
                 lastMatchedWord = target; 
                 lastMatchTime = now; 
                 hitBoss(); 
             }
         } else {
-            const matchedEnemies = state.enemies.filter(e => !e.isDying && input.includes(clean(e.word)));
+            // ★★★ FIX: 更嚴格的比對 ★★★
+            const matchedEnemies = state.enemies.filter(e => {
+                if (e.isDying) return false;
+                const target = clean(e.word);
+                // 檢查是否是完整單字匹配 (例如防止 'wait' 觸發 'it')
+                const regex = new RegExp(`(^|\\s)${target}($|\\s)`);
+                return regex.test(input) || input === target;
+            });
+
             if (matchedEnemies.length > 0) {
-                matchedEnemies.sort((a,b) => b.z - a.z);
+                matchedEnemies.sort((a,b) => b.z - a.z); // 優先打最近的
                 const target = matchedEnemies[0];
                 lastMatchedWord = clean(target.word);
                 lastMatchTime = now; 
@@ -1355,7 +1378,7 @@
         
         if (remaining <= 1) {
             phaseEl.classList.add('text-red-500', 'flicker');
-            phaseEl.innerText += " [FINISH HIM!]";
+            phaseEl.innerText += " [FINISH IT!]";
         } else {
             phaseEl.classList.remove('text-red-500', 'flicker');
             phaseEl.classList.add('text-yellow-500');
@@ -1368,8 +1391,11 @@
         let scoreGain = (GAME_BALANCE.COMBO[state.difficultyMode].baseScore * bossParams.scoreMult + (state.combo * 20)) * state.difficulty;
         state.score += scoreGain;
 
+        // ★★★ FIX: 安全檢查 ★★★
+        const boss = state.enemies[0];
+
         if (Math.random() < bossParams.criticalChance) {
-            if (state.enemies[0]) state.enemies[0].z = Math.max(0.05, state.enemies[0].z - bossParams.pushback);
+            if (boss) boss.z = Math.max(0.05, boss.z - bossParams.pushback);
             state.shake = 50; state.freezeTimer = bossParams.stunDuration;
             const toast = document.getElementById('reward-toast');
             toast.innerText = "BOSS STUNNED!"; toast.classList.add('toast-active');
@@ -1378,19 +1404,20 @@
             sfx.reward(); 
         } else {
             state.shake = 20; 
-            if (state.enemies[0]) state.enemies[0].z = Math.max(0.1, state.enemies[0].z - 0.05); 
+            if (boss) boss.z = Math.max(0.1, boss.z - 0.05); 
         }
-        createExplosion(state.enemies[0]); sfx.kill();
+        if (boss) createExplosion(boss); 
+        sfx.kill();
         
         if (state.bossWordIndex >= state.bossData.words.length) {
             state.bossSentencesCleared++;
             executeReward('RECOVER'); 
 
             const pushBackAmt = BOSS_BEHAVIOR.pushback[state.difficultyMode] || 0.3;
-            if (state.enemies[0]) state.enemies[0].z = Math.max(0.1, state.enemies[0].z - pushBackAmt);
+            if (boss) boss.z = Math.max(0.1, boss.z - pushBackAmt);
 
             if (state.bossSentencesCleared >= state.bossSentencesRequired) {
-                state.enemies[0].isDying = true; 
+                if(boss) boss.isDying = true; 
                 winGame();
             } else {
                 setTimeout(() => {
@@ -1403,6 +1430,7 @@
     }
 
     function createExplosion(en) {
+        if(!en) return; // Safety
         const rect = canvas.parentElement.getBoundingClientRect();
         const x = rect.width/2 + (en.x * en.z);
         const y = rect.height/2 + (en.y * en.z) + (en.z * rect.height * 0.45);
@@ -1477,7 +1505,12 @@
         }
 
         const closest = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
-        state.enemies.sort((a,b) => a.z - b.z);
+        
+        // ★★★ FIX: 視覺渲染順序修正 (Painter's Algorithm: 先畫遠的，再畫近的) ★★★
+        // b.z (大, 近) - a.z (小, 遠) => 由大到小排序 (近...遠)
+        // 迴圈由後往前 (i--) => 遠...近 => 正確！
+        state.enemies.sort((a,b) => b.z - a.z);
+
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             const en = state.enemies[i];
             if (en.update()) {
@@ -1527,6 +1560,7 @@
             labelEl.innerText = "TARGETING";
             labelEl.className = "text-[6px] text-zinc-600 mb-1 uppercase tracking-widest";
             
+            // ★★★ FIX: Targeting Logic Update ★★★
             const target = [...state.enemies].filter(e => !e.isDying).sort((a,b) => b.z - a.z)[0];
             let t = "AWAITING...";
             if (target) t = target.word.toUpperCase();
@@ -1554,9 +1588,9 @@
         el.innerHTML = `
             <div class="grid grid-cols-[35%_65%] gap-1 text-[9px] uppercase tracking-wider font-bold text-left">
                 <div class="text-zinc-500">MISSION</div><div class="text-blue-400">Book ${selectedBook} - ${title}</div>
-                <div class="text-zinc-500">DIFFICULTY</div><div class="text-red-400">${state.difficultyMode}</div>
+                <div class="text-zinc-500">LEVEL</div><div class="text-red-400">${state.difficultyMode}</div>
                 <div class="text-zinc-500">UNIT</div><div class="text-white">${state.player.class}</div>
-                <div class="text-zinc-500">OPERATOR</div><div class="text-white">${state.player.no}. ${state.player.name}</div>
+                <div class="text-zinc-500">AGENT</div><div class="text-white">${state.player.no}. ${state.player.name}</div>
                 <div class="text-zinc-500">DATE</div><div class="text-zinc-400">${dateStr}</div>
             </div>
         `;
