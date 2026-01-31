@@ -222,17 +222,18 @@
             align-items: center;
             justify-content: center;
             opacity: 0.7;         /* 微透明 */
+            transition: opacity 0.3s; /* 增加淡入淡出效果 */
         }
         .game-credits p {
             font-family: 'Press Start 2P', cursive;
-            font-size: 8px;       /* 縮小字體 */
+            font-size: 7px;       /* 縮小字體 */
             color: #ffffff;          /* 白色 */
             margin: 0;
             text-transform: uppercase;
             text-shadow: 0 0 2px #000;
         }
         .game-credits img {
-            width: 18px;          /* 縮小 logo */
+            width: 20px;          /* 縮小 logo */
             height: auto;
             gap: 6px;
             filter: drop-shadow(0 0 2px #000);
@@ -398,7 +399,8 @@
     </div>
 
     <!-- ★★★ Footer ★★★ -->
-    <div class="game-credits">
+    <!-- 增加 ID 以便程式碼控制 -->
+    <div id="game-footer" class="game-credits">
         <p>Designed by CHENWEI with Gemini</p>
         <img src="https://d4cheap16.github.io/tddt/Gemini.png" alt="Google Gemini Logo">
     </div>
@@ -440,16 +442,16 @@
     const BOSS_CONFIG_DATA = {
         'Rookie':    { startZ: 0.10, speed: 0.0015, sentencesRequired: 2 },
         'Veteran':   { startZ: 0.10, speed: 0.0016, sentencesRequired: 3 },
-        'Nightmare': { startZ: 0.10, speed: 0.0018, sentencesRequired: 4 },
-        'NoHope':    { startZ: 0.40, speed: 0.0009, sentencesRequired: 5 } 
+        'Nightmare': { startZ: 0.10, speed: 0.0019, sentencesRequired: 4 },
+        'NoHope':    { startZ: 0.40, speed: 0.0007, sentencesRequired: 5 } 
     };
 
     /* BOSS 震動參數 */
     const BOSS_SHAKE_CONFIG = {
         'Rookie':    { startZ: 0.5, intensity: 10, axis: 'Y' },
         'Veteran':   { startZ: 0.4, intensity: 20, axis: 'Y' },
-        'Nightmare': { startZ: 0.3, intensity: 40, axis: 'XY' },
-        'NoHope':    { startZ: 0.2, intensity: 80, axis: 'XY' }
+        'Nightmare': { startZ: 0.3, intensity: 70, axis: 'XY' },
+        'NoHope':    { startZ: 0.2, intensity: 100, axis: 'XY' }
     };
 
     const BOSS_BEHAVIOR = { 
@@ -1217,7 +1219,9 @@
         state.wordPool = []; state.sentencePool = []; state.bossMode = false;
         state.damageAlpha = 0; state.damageTaken = 0; 
         document.getElementById('boss-ui').style.opacity = '0';
-        document.getElementById('perfect-badge').style.display = 'none'; 
+        document.getElementById('perfect-badge').style.display = 'none';
+        // ★★★ FIX: 隱藏 Footer 避免干擾 ★★★ 
+        document.getElementById('game-footer').classList.add('hidden');
         updateUIPanel();
         requestWakeLock(); handleResize(); initSpeech(); requestAnimationFrame(gameLoop);
         sfx.init();
@@ -1604,6 +1608,8 @@
         state.gameActive = false; if(wakeLock) releaseWakeLock(); 
         document.getElementById('win-score-display').innerText = Math.floor(state.score); 
         document.getElementById('win-screen').classList.remove('hidden'); 
+        // ★★★ FIX: 重新顯示 Footer ★★★
+        document.getElementById('game-footer').classList.remove('hidden');
         updateResultDetails('win-details');
         if (state.damageTaken === 0) { document.getElementById('perfect-badge').style.display = 'block'; sfx.perfect(); }
         const btn = document.getElementById('next-level-btn');
@@ -1619,6 +1625,8 @@
         state.gameActive = false; if(wakeLock) releaseWakeLock(); 
         document.getElementById('fail-score-display').innerText = Math.floor(state.score); 
         document.getElementById('game-over-screen').classList.remove('hidden'); 
+        // ★★★ FIX: 重新顯示 Footer ★★★
+        document.getElementById('game-footer').classList.remove('hidden');
         updateResultDetails('fail-details');
         syncData(); 
     }
