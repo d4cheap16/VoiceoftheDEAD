@@ -218,19 +218,11 @@
             z-index: 200;         /* 顯示在最上層 */
             pointer-events: none; /* 關鍵：讓點擊穿透，不影響遊戲按鈕 */
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
             opacity: 0.7;         /* 微透明 */
         }
-
-        .game-credits img {
-            width: 24px;          /* 縮小 logo */
-            height: auto;
-            margin-bottom: 2px;
-            filter: drop-shadow(0 0 2px #000);
-        }
-
         .game-credits p {
             font-family: 'Press Start 2P', cursive;
             font-size: 6px;       /* 縮小字體 */
@@ -238,6 +230,12 @@
             margin: 0;
             text-transform: uppercase;
             text-shadow: 0 0 2px #000;
+        }
+        .game-credits img {
+            width: 24px;          /* 縮小 logo */
+            height: auto;
+            gap: 6px;
+            filter: drop-shadow(0 0 2px #000);
         }
     </style>
 </head>
