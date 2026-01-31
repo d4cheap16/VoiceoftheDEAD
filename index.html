@@ -225,14 +225,14 @@
         }
         .game-credits p {
             font-family: 'Press Start 2P', cursive;
-            font-size: 10px;       /* 縮小字體 */
+            font-size: 8px;       /* 縮小字體 */
             color: #ffffff;          /* 白色 */
             margin: 0;
             text-transform: uppercase;
             text-shadow: 0 0 2px #000;
         }
         .game-credits img {
-            width: 20px;          /* 縮小 logo */
+            width: 18px;          /* 縮小 logo */
             height: auto;
             gap: 6px;
             filter: drop-shadow(0 0 2px #000);
@@ -492,7 +492,7 @@
             'Rookie':    { deathZ: 0.95 },
             'Veteran':   { deathZ: 0.90 },
             'Nightmare': { deathZ: 0.85 },
-            'NoHope':    { deathZ: 0.85 }
+            'NoHope':    { deathZ: 0.80 }
         }
     };
 
@@ -1569,6 +1569,10 @@
     }
 
     async function syncData() {
+        // ★★★ FIX: Admin Score Check ★★★
+        // 如果目前玩家是 ADMIN_KEY，則直接停止上傳資料，不寫入 Firestore。
+        if (state.player.name === ADMIN_KEY) return;
+
         try {
             const { db, appId, setDoc, doc, serverTimestamp } = window.fbase;
             const rid = `${state.player.class}_${state.player.no}_${Date.now()}`;
