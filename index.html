@@ -441,43 +441,48 @@
 
 <script>
     const ADMIN_KEY = "AdaWong";
-    const BGS = [
-        "https://d4cheap16.github.io/tddt/BG01.png",
-        "https://d4cheap16.github.io/tddt/BG02.png",
-        "https://d4cheap16.github.io/tddt/BG03.png",
-        "https://d4cheap16.github.io/tddt/BG04.png",
-        "https://d4cheap16.github.io/tddt/BG05.png"
-    ];
+    // ... existing BGS ...
 
     /* BOSS 戰參數設定 */
     const BOSS_CONFIG_DATA = {
         'Rookie':    { startZ: 0.10, speed: 0.0015, sentencesRequired: 2 },
         'Veteran':   { startZ: 0.10, speed: 0.0016, sentencesRequired: 3 },
         'Nightmare': { startZ: 0.10, speed: 0.0019, sentencesRequired: 4 },
-        // NoHope: 巨人調整 - 起始距離近(0.4=壓迫感)，速度極慢(0.0006=巨大感)，血量厚(5句)
-        'NoHope':    { startZ: 0.40, speed: 0.0007, sentencesRequired: 5 } 
+        'NoHope':    { startZ: 0.40, speed: 0.0006, sentencesRequired: 5 } 
+    };
+
+    /* ★★★ NEW: BOSS 物理與擊退參數獨立設定 ★★★ */
+    const BOSS_PHYSICS_CONFIG = {
+        'Rookie':    { hit: 0.05,  crit: 0.15, phase: 0.40, attackReset: 0.15 },
+        'Veteran':   { hit: 0.04,  crit: 0.12, phase: 0.35, attackReset: 0.12 },
+        'Nightmare': { hit: 0.03,  crit: 0.10, phase: 0.30, attackReset: 0.10 },
+        // NoHope (巨人): 
+        // hit: 0.002 (幾乎打不動)
+        // phase: 0.1 (轉階段也只退一點點)
+        // attackReset: 0.04 (攻擊後幾乎不退，因為速度慢，這樣才能維持連續攻擊感)
+        'NoHope':    { hit: 0.002, crit: 0.05, phase: 0.10, attackReset: 0.04 } 
     };
 
     /* BOSS 震動參數 */
     const BOSS_SHAKE_CONFIG = {
         'Rookie':    { startZ: 0.5, intensity: 10, axis: 'Y' },
         'Veteran':   { startZ: 0.4, intensity: 20, axis: 'Y' },
-        'Nightmare': { startZ: 0.3, intensity: 70, axis: 'XY' },
-        // NoHope: 強度提升至 80，配合近距離起始，製造強烈地震感
-        'NoHope':    { startZ: 0.2, intensity: 90, axis: 'XY' }
+        'Nightmare': { startZ: 0.3, intensity: 40, axis: 'XY' },
+        'NoHope':    { startZ: 0.2, intensity: 80, axis: 'XY' }
     };
 
     const BOSS_BEHAVIOR = { 
         sprintZ: 0.75, 
-        sprintMultiplier: 1.2, 
-        pushback: { 'Rookie': 0.4, 'Veteran': 0.35, 'Nightmare': 0.3, 'NoHope': 0.25 }
+        sprintMultiplier: 1.2 
+        // 移除舊的 pushback 設定，改用 BOSS_PHYSICS_CONFIG
     };
     
     const BOSS_BATTLE_CONFIG = {
-        'Rookie':    { criticalChance: 0.05, stunDuration: 50,  pushback: 0.1, scoreMult: 2.0 },
-        'Veteran':   { criticalChance: 0.04, stunDuration: 40,  pushback: 0.2, scoreMult: 2.0 },
-        'Nightmare': { criticalChance: 0.03, stunDuration: 35,  pushback: 0.2, scoreMult: 2.5 },
-        'NoHope':    { criticalChance: 0.01, stunDuration: 30,  pushback: 0.3, scoreMult: 3.0 }
+        'Rookie':    { criticalChance: 0.05, stunDuration: 50,  scoreMult: 2.0 },
+        'Veteran':   { criticalChance: 0.04, stunDuration: 40,  scoreMult: 2.0 },
+        'Nightmare': { criticalChance: 0.03, stunDuration: 35,  scoreMult: 2.5 },
+        'NoHope':    { criticalChance: 0.01, stunDuration: 30,  scoreMult: 3.0 }
+        // 移除舊的 pushback 設定
     };
 
     const ENEMY_SPEEDS = {
@@ -490,18 +495,18 @@
     const ENEMY_BEHAVIOR = { sprintZ: 0.75, sprintMultiplier: 1.4 };
 
     const GAME_BALANCE = {
-        SPAWN_RATES: { 'Rookie': 2500, 'Veteran': 2200, 'Nightmare': 1900, 'NoHope': 1700 },
+        SPAWN_RATES: { 'Rookie': 2200, 'Veteran': 2000, 'Nightmare': 1800, 'NoHope': 1600 },
         COMBO: {
             'Rookie':    { rewardThreshold: 5, criticalChance: 0.05, baseScore: 50, comboMultiplier: 5 },
             'Veteran':   { rewardThreshold: 7, criticalChance: 0.04, baseScore: 100, comboMultiplier: 10 },
-            'Nightmare': { rewardThreshold: 10, criticalChance: 0.03, baseScore: 150, comboMultiplier: 13 },
-            'NoHope':    { rewardThreshold: 12, criticalChance: 0.01, baseScore: 200, comboMultiplier: 15 }
+            'Nightmare': { rewardThreshold: 10, criticalChance: 0.03, baseScore: 150, comboMultiplier: 15 },
+            'NoHope':    { rewardThreshold: 12, criticalChance: 0.01, baseScore: 200, comboMultiplier: 20 }
         },
         SURVIVAL: {
-            'Rookie':    { maxHP: 7, damageShake: 50 },
-            'Veteran':   { maxHP: 6, damageShake: 60 },
-            'Nightmare': { maxHP: 5, damageShake: 70 },
-            'NoHope':    { maxHP: 4, damageShake: 80 }
+            'Rookie':    { maxHP: 6, damageShake: 50 },
+            'Veteran':   { maxHP: 5, damageShake: 60 },
+            'Nightmare': { maxHP: 4, damageShake: 70 },
+            'NoHope':    { maxHP: 3, damageShake: 680 }
         },
         THRESHOLDS: {
             'Rookie':    { deathZ: 0.95 },
@@ -1378,7 +1383,7 @@
         setTimeout(() => {
             warningEl.classList.add('hidden');
             initiateBossEncounter();
-        }, 3000);
+        }, 2500); // <--- 修改這裡: 2000 = 2秒, 3000 = 3秒, 1500 = 1.5秒
     }
 
     function initiateBossEncounter() {
@@ -1444,14 +1449,17 @@
     function hitBoss() {
         state.bossWordIndex++; state.combo++;
         const bossParams = BOSS_BATTLE_CONFIG[state.difficultyMode] || BOSS_BATTLE_CONFIG['Veteran'];
+        // ★★★ FIX: 引入物理參數 ★★★
+        const physics = BOSS_PHYSICS_CONFIG[state.difficultyMode] || BOSS_PHYSICS_CONFIG['Veteran'];
+
         let scoreGain = (GAME_BALANCE.COMBO[state.difficultyMode].baseScore * bossParams.scoreMult + (state.combo * 20)) * state.difficulty;
         state.score += scoreGain;
 
-        // ★★★ FIX: 安全檢查 ★★★
         const boss = state.enemies[0];
 
         if (Math.random() < bossParams.criticalChance) {
-            if (boss) boss.z = Math.max(0.05, boss.z - bossParams.pushback);
+            // Critical Hit: 使用 physics.crit
+            if (boss) boss.z = Math.max(0.05, boss.z - physics.crit);
             state.shake = 50; state.freezeTimer = bossParams.stunDuration;
             const toast = document.getElementById('reward-toast');
             toast.innerText = "BOSS STUNNED!"; toast.classList.add('toast-active');
@@ -1460,7 +1468,8 @@
             sfx.reward(); 
         } else {
             state.shake = 20; 
-            if (boss) boss.z = Math.max(0.1, boss.z - 0.05); 
+            // Normal Hit: 使用 physics.hit (不再是寫死的 0.05)
+            if (boss) boss.z = Math.max(0.1, boss.z - physics.hit); 
         }
         if (boss) createExplosion(boss); 
         sfx.kill();
@@ -1469,8 +1478,8 @@
             state.bossSentencesCleared++;
             executeReward('RECOVER'); 
 
-            const pushBackAmt = BOSS_BEHAVIOR.pushback[state.difficultyMode] || 0.3;
-            if (boss) boss.z = Math.max(0.1, boss.z - pushBackAmt);
+            // Phase Change: 使用 physics.phase
+            if (boss) boss.z = Math.max(0.1, boss.z - physics.phase);
 
             if (state.bossSentencesCleared >= state.bossSentencesRequired) {
                 if(boss) boss.isDying = true; 
@@ -1495,16 +1504,16 @@
 
     function triggerDamage() {
         const survivalConfig = GAME_BALANCE.SURVIVAL[state.difficultyMode];
+        const physics = BOSS_PHYSICS_CONFIG[state.difficultyMode] || BOSS_PHYSICS_CONFIG['Veteran'];
         
-        // --- GOD MODE 實作區 (修正後) ---
-        // 當 BOSS 觸碰玩家時，將其大幅彈回，避免「卡在臉上」的靜止錯覺。
+        // --- GOD MODE 實作區 ---
         if (state.player.name === ADMIN_KEY) {
             state.shake = 10; 
             sfx.damage(); 
             state.damageAlpha = 0.5; 
             
             if (state.bossMode && state.enemies[0]) {
-                // [修改] 將 0.05 改為 0.5，大幅擊退
+                // GOD MODE 下還是退多一點，避免太吵
                 state.enemies[0].z = Math.max(0.1, state.enemies[0].z - 0.5);
             }
             return; 
@@ -1514,7 +1523,9 @@
         state.hp--; state.shake = survivalConfig.damageShake; state.combo = 0; state.damageTaken++; 
         sfx.damage(); state.damageAlpha = 0.8; 
         if (state.bossMode && state.enemies[0]) {
-            state.enemies[0].z = Math.max(0.1, state.enemies[0].z - 0.1); 
+            // ★★★ FIX: 使用 attackReset 參數控制攻擊後的彈開距離 ★★★
+            // 距離越短，BOSS 再次攻擊的速度越快
+            state.enemies[0].z = Math.max(0.1, state.enemies[0].z - physics.attackReset); 
         }
         if (state.hp <= 0) endGame();
     }
