@@ -377,7 +377,7 @@
         <div id="fail-details" class="w-full max-w-xs bg-zinc-900/80 border border-zinc-700 p-3 mb-4 rounded"></div>
         <div class="flex flex-col gap-3 w-full max-w-xs">
             <button onclick="restartGame()" class="btn py-5 bg-red-950 text-white border-red-700 uppercase">Retry Mission</button>
-            <button onclick="location.reload()" class="btn py-4 text-zinc-500 uppercase">Back to Login</button>
+            <button onclick="location.reload()" class="btn py-4 text-zinc-500 uppercase">Return Home</button>
         </div>
     </div>
 
@@ -482,13 +482,12 @@
         'Rookie':    { startZ: 0.5, intensity: 10, axis: 'Y' },
         'Veteran':   { startZ: 0.4, intensity: 20, axis: 'Y' },
         'Nightmare': { startZ: 0.3, intensity: 40, axis: 'XY' },
-        'NoHope':    { startZ: 0.2, intensity: 80, axis: 'XY' }
+        'NoHope':    { startZ: 0.2, intensity: 90, axis: 'XY' }
     };
 
     const BOSS_BEHAVIOR = { 
         sprintZ: 0.75, 
         sprintMultiplier: 1.2 
-        // 移除舊的 pushback 設定，改用 BOSS_PHYSICS_CONFIG
     };
     
     const BOSS_BATTLE_CONFIG = {
@@ -520,19 +519,19 @@
             'Rookie':    { maxHP: 6, damageShake: 50 },
             'Veteran':   { maxHP: 5, damageShake: 60 },
             'Nightmare': { maxHP: 4, damageShake: 70 },
-            'NoHope':    { maxHP: 3, damageShake: 680 }
+            'NoHope':    { maxHP: 3, damageShake: 80 }
         },
         THRESHOLDS: {
             'Rookie':    { deathZ: 0.95 },
             'Veteran':   { deathZ: 0.90 },
             'Nightmare': { deathZ: 0.85 },
-            'NoHope':    { deathZ: 0.80 }
+            'NoHope':    { deathZ: 0.85 }
         }
     };
 
     const REWARD_CONFIG = {
         'RECOVER': {
-            text: "RECOVER!", textColor: "#6ee7b7", borderColor: "#6ee7b7", boxShadow: "none", 
+            text: "RELAX!", textColor: "#6ee7b7", borderColor: "#6ee7b7", boxShadow: "none", 
             overlayColor: "rgba(110, 231, 183, 0.4)", overlayDuration: 600, 
             effect: (state) => { const maxHP = GAME_BALANCE.SURVIVAL[state.difficultyMode].maxHP; state.hp = Math.min(maxHP, state.hp + 1); }
         },
@@ -899,7 +898,7 @@
         setTimeout(() => {
             toast.classList.remove('toast-active'); toast.classList.remove('flicker');
             setTimeout(() => { toast.style.color = '#fff'; toast.style.textShadow = '0 0 10px #000'; overlay.style.backgroundColor = 'white'; }, 500);
-        }, 2000);
+        }, 3000);
     }
 
     function triggerCriticalWipe() {
@@ -1421,6 +1420,9 @@
         if (state.isBossStarting) return;
         state.isBossStarting = true;
 
+        // ★★★ FIX: 清空敵人，讓玩家專心準備 ★★★
+        state.enemies = [];
+
         // Show Warning
         const warningEl = document.getElementById('warning-screen');
         warningEl.classList.remove('hidden');
@@ -1626,7 +1628,8 @@
         });
         
         const spawnRate = GAME_BALANCE.SPAWN_RATES[state.difficultyMode] || 2200;
-        if (!state.bossMode && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > spawnRate) {
+        // ★★★ FIX: Prevent spawning during boss warning ★★★
+        if (!state.bossMode && !state.isBossStarting && state.freezeTimer <= 0 && Date.now() - state.spawnTimer > spawnRate) {
             state.enemies.push(new Enemy(getNextWord())); state.spawnTimer = Date.now();
         }
 
